@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     ";
 
     // 4. Génération de la réponse
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     const result = await model.generateContent([
       systemPrompt, 
       `Question utilisateur : ${message}`
