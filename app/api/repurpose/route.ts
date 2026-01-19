@@ -6,35 +6,53 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 function extractVideoId(url: string): string | null {
-  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/))\??v?=?([^#&?]*).*/;
   const match = url.match(regExp);
-  return (match && match[7].length === 11) ? match[7] : null;
+  
+  // Si match[8] existe et fait 11 chars (standard YouTube ID)
+  if (match && match[8] && match[8].length === 11) {
+    return match[8];
+  }
+  
+  // Fallback simple pour les URLs qui pourraient avoir l'ID juste après le dernier slash
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.hostname === 'youtu.be') return urlObj.pathname.slice(1);
+    if (urlObj.pathname.startsWith('/shorts/')) return urlObj.pathname.split('/')[2];
+    const v = urlObj.searchParams.get('v');
+    if (v && v.length === 11) return v;
+  } catch (e) {
+    // Ignore URL parsing errors
+  }
+
+  return null;
 }
 
 async function getTranscriptWithPython(videoId: string): Promise<string> {
-  // On utilise 'python3' ou 'python' selon l'environnement
   const cmd = `python3 -m youtube_transcript_api ${videoId} --languages fr en --format json`;
   console.log(`Running python transcript: ${cmd}`);
   
   try {
     const { stdout, stderr } = await execAsync(cmd);
-    if (stderr && stderr.includes('Error')) {
-       console.warn('Python stderr:', stderr);
+    
+    if (!stdout || stdout.trim() === "") {
+        throw new Error("Le script Python n'a retourné aucune donnée.");
     }
-    
-    // Le stdout contient le JSON
-    const data = JSON.parse(stdout);
-    
-    // Le CLI retourne une liste de transcripts (un par ID vidéo).
-    // Structure: [[{text: "...", ...}, ...]]
+
+    // Vérifier si le début ressemble à du JSON
+    const trimmedStdout = stdout.trim();
+    if (!trimmedStdout.startsWith('[') && !trimmedStdout.startsWith('{')) {
+        // C'est probablement un message d'erreur en texte brut
+        throw new Error(trimmedStdout.split('\n')[0]); 
+    }
+
+    const data = JSON.parse(trimmedStdout);
     let transcriptData = data;
     
-    // Si data est un tableau dont le premier élément est aussi un tableau, on prend le premier
     if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
         transcriptData = data[0];
     }
     
-    // Si c'est une liste d'objets {text, start, duration}
     if (Array.isArray(transcriptData)) {
         return transcriptData.map((item: any) => item.text).join(' ');
     }
@@ -42,11 +60,21 @@ async function getTranscriptWithPython(videoId: string): Promise<string> {
     throw new Error('Format JSON inattendu du script Python');
 
   } catch (error: any) {
-    console.error("Python script error:", error.message);
-    // Gestion spécifique des erreurs courantes
-    if (error.stderr?.includes('TranscriptsDisabled')) {
-        throw new Error("Les sous-titres sont désactivés pour cette vidéo.");
+    console.error("Python extraction error:", error.message);
+    
+    // Si c'est une erreur d'exécution du process (ex: 429)
+    if (error.stderr) {
+        if (error.stderr.includes('TranscriptsDisabled')) {
+            throw new Error("Les sous-titres sont désactivés pour cette vidéo.");
+        }
+        if (error.stderr.includes('Too Many Requests') || error.stderr.includes('429')) {
+            throw new Error("YouTube bloque temporairement les requêtes (429).");
+        }
+        if (error.stderr.includes('VideoUnavailable')) {
+            throw new Error("La vidéo est indisponible ou privée.");
+        }
     }
+    
     throw error;
   }
 }
