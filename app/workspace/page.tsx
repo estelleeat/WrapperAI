@@ -1,19 +1,20 @@
-'use client';
-
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, FileText, Bot, Youtube, Menu, Settings, ChevronRight, Search, Bell, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, FileText, Bot, Youtube, Menu, Settings, ChevronRight, Search, Bell, LogOut, User, MessageSquare, Box } from 'lucide-react';
 import { signout } from '../login/actions';
 import { createClient } from '@/utils/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import RepurposeGenerator from '@/components/features/repurpose/RepurposeGenerator';
 import FileUploader from '@/components/features/rag/FileUploader';
 import ChatInterface from '@/components/features/rag/ChatInterface';
+import ToolsInterface from '@/components/features/rag/ToolsInterface';
 
 export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<'repurpose' | 'rag'>('repurpose');
+  const [ragSubTab, setRagSubTab] = useState<'chat' | 'tools'>('chat');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [systemStatus, setSystemStatus] = useState<'operational' | 'down'>('operational');
 
   useEffect(() => {
     const supabase = createClient();
@@ -22,6 +23,22 @@ export default function WorkspacePage() {
       setUser(user);
     };
     getUser();
+
+    // Check system health
+    const checkHealth = async () => {
+      try {
+        const res = await fetch('/api/health');
+        if (res.ok) setSystemStatus('operational');
+        else setSystemStatus('down');
+      } catch {
+        setSystemStatus('down');
+      }
+    };
+    
+    checkHealth();
+    // Poll every minute
+    const interval = setInterval(checkHealth, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   // Dérivation des initiales et du nom
@@ -59,11 +76,17 @@ export default function WorkspacePage() {
             Assistant RAG
           </button>
         </nav>
+
+        {activeTab === 'rag' && ragSubTab === 'chat' && (
+          <div className="p-4 border-t border-slate-800 bg-slate-900">
+             <FileUploader />
+          </div>
+        )}
         
         <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
             <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                System Operational
+                <div className={`w-2 h-2 rounded-full ${systemStatus === 'operational' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
+                {systemStatus === 'operational' ? 'System Operational' : 'AI Service Offline'}
             </div>
             <Settings className="w-3 h-3 hover:text-white cursor-pointer" />
         </div>
@@ -127,7 +150,8 @@ export default function WorkspacePage() {
 
         {/* Workspace */}
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
-          <div className="max-w-6xl mx-auto h-full">
+          <div className="max-w-6xl mx-auto h-full flex flex-col">
+            
             {activeTab === 'repurpose' && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[500px] animate-in fade-in slide-in-from-bottom-2 duration-500">
                  <RepurposeGenerator />
@@ -135,20 +159,45 @@ export default function WorkspacePage() {
             )}
 
             {activeTab === 'rag' && (
-               <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <FileUploader />
-                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
-                            <p className="text-[10px] text-blue-700 leading-relaxed">
-                                <strong>Note :</strong> Les documents ajoutés ici alimentent uniquement l'Assistant RAG pour vos recherches techniques.
-                            </p>
+               <div className="flex-1 flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+                 {/* Sub-navigation for RAG */}
+                 <div className="flex items-center gap-2 mb-6">
+                    <button 
+                        onClick={() => setRagSubTab('chat')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${ragSubTab === 'chat' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-gray-100'}`}
+                    >
+                        <MessageSquare className="w-4 h-4" /> Discussion
+                    </button>
+                    <button 
+                        onClick={() => setRagSubTab('tools')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${ragSubTab === 'tools' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-gray-100'}`}
+                    >
+                        <Box className="w-4 h-4" /> Micro-Apps
+                        <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">BETA</span>
+                    </button>
+                 </div>
+
+                 {ragSubTab === 'chat' ? (
+                    <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
+                        <div className="lg:col-span-1 space-y-6 overflow-y-auto">
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                                <FileUploader />
+                                <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+                                    <p className="text-[10px] text-blue-700 leading-relaxed">
+                                        <strong>Note :</strong> Les documents ajoutés ici alimentent uniquement l'Assistant RAG pour vos recherches techniques.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="lg:col-span-3 flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                            <ChatInterface />
                         </div>
                     </div>
-                 </div>
-                 <div className="lg:col-span-3 flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <ChatInterface />
-                 </div>
+                 ) : (
+                    <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <ToolsInterface />
+                    </div>
+                 )}
                </div>
             )}
           </div>

@@ -1,0 +1,67 @@
+import { NextResponse } from 'next/server';
+import { genAI } from '@/lib/google';
+
+export async function POST(req: Request) {
+  try {
+    const { description } = await req.json();
+
+    if (!description) {
+      return NextResponse.json({ error: 'Description manquante' }, { status: 400 });
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+
+    const systemPrompt = `
+      Tu es un architecte logiciel expert en création d'outils no-code.
+      Ton but est de transformer une demande utilisateur en une configuration d'outil au format JSON strict.
+      
+      Demande utilisateur : "${description}"
+
+      Tu dois générer un objet JSON avec cette structure exacte :
+      {
+        "name": "Nom court et accrocheur de l'outil",
+        "description": "Courte description de ce que fait l'outil",
+        "inputs": [
+          { 
+            "key": "nom_variable", 
+            "label": "Libellé pour l'utilisateur", 
+            "type": "text" | "textarea" | "select", 
+            "options": ["Option 1", "Option 2"] // Seulement si type est 'select'
+          }
+        ],
+        "promptTemplate": "Le prompt système que l'IA utilisera pour générer le résultat. Utilise {{nom_variable}} pour insérer les valeurs."
+      }
+
+      Exemple pour 'Générateur de mail' :
+      {
+        "name": "Cold Email Pro",
+        "description": "Génère des emails de prospection personnalisés",
+        "inputs": [
+          { "key": "targetName", "label": "Nom du prospect", "type": "text" },
+          { "key": "tone", "label": "Ton", "type": "select", "options": ["Amical", "Formel"] }
+        ],
+        "promptTemplate": "Rédige un email de prospection pour {{targetName}} avec un ton {{tone}}."
+      }
+
+      Réponds UNIQUEMENT le JSON. Pas de markdown, pas de texte avant/après.
+    `;
+
+    const result = await model.generateContent(systemPrompt);
+    const response = await result.response;
+    let text = response.text();
+    
+    // Nettoyage au cas où l'IA mettrait des backticks
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const toolConfig = JSON.parse(text);
+
+    return NextResponse.json(toolConfig);
+
+  } catch (error: any) {
+    console.error('Tool Gen Error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Erreur de génération' },
+      { status: 500 }
+    );
+  }
+}
