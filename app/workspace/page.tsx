@@ -59,12 +59,6 @@ export default function WorkspacePage() {
             Assistant RAG
           </button>
         </nav>
-
-        {activeTab === 'rag' && (
-          <div className="p-4 border-t border-slate-800 bg-slate-900">
-             <FileUploader />
-          </div>
-        )}
         
         <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
             <div className="flex items-center gap-2">
@@ -141,8 +135,20 @@ export default function WorkspacePage() {
             )}
 
             {activeTab === 'rag' && (
-               <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
-                 <ChatInterface />
+               <div className="h-full grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                 <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <FileUploader />
+                        <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+                            <p className="text-[10px] text-blue-700 leading-relaxed">
+                                <strong>Note :</strong> Les documents ajoutés ici alimentent uniquement l'Assistant RAG pour vos recherches techniques.
+                            </p>
+                        </div>
+                    </div>
+                 </div>
+                 <div className="lg:col-span-3 flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <ChatInterface />
+                 </div>
                </div>
             )}
           </div>
