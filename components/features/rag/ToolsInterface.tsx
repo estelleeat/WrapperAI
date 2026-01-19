@@ -23,6 +23,7 @@ export default function ToolsInterface() {
   // State pour la création
   const [newToolPrompt, setNewToolPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
 
   // State pour l'exécution
   const [formValues, setFormValues] = useState<Record<string, string>>({});
@@ -34,6 +35,7 @@ export default function ToolsInterface() {
     if (!newToolPrompt.trim()) return;
 
     setIsGenerating(true);
+    setGenError(null);
     try {
       const res = await fetch('/api/tools/generate', {
         method: 'POST',
@@ -41,15 +43,15 @@ export default function ToolsInterface() {
         body: JSON.stringify({ description: newToolPrompt }),
       });
       
-      const config = await res.json();
-      if (!res.ok) throw new Error(config.error);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Échec de la génération");
 
-      const newTool = { ...config, id: Date.now().toString() };
+      const newTool = { ...data, id: Date.now().toString() };
       setTools(prev => [...prev, newTool]);
       setActiveToolId(newTool.id);
       setNewToolPrompt('');
-    } catch (err) {
-      alert("Erreur : Impossible de créer l'outil.");
+    } catch (err: any) {
+      setGenError(err.message);
     } finally {
       setIsGenerating(false);
     }
@@ -147,6 +149,13 @@ export default function ToolsInterface() {
                         {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
                     </button>
                 </form>
+
+                {genError && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                        <Sparkles className="w-4 h-4 opacity-50" />
+                        {genError}
+                    </div>
+                )}
 
                 <div className="mt-8 grid grid-cols-2 gap-4">
                     {["Générateur de slogans", "Traducteur de code Python", "Correcteur d'orthographe pro", "Générateur de FAQ"].map(idea => (
