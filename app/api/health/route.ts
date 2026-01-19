@@ -13,7 +13,7 @@ export async function GET() {
     await model.generateContent("ping");
     geminiStatus = 'ok';
   } catch (error: any) {
-    console.error('Gemini Health Check Error:', error.message);
+    console.error('❌ Gemini Health Check FAILED:', error.message); // LOG VISIBLE TERMINAL
     errorDetails += `Gemini: ${error.message}; `;
   }
 
@@ -22,7 +22,7 @@ export async function GET() {
     await generateWithGroq("System", "ping");
     groqStatus = 'ok';
   } catch (error: any) {
-    console.error('Groq Health Check Error:', error.message);
+    console.error('❌ Groq Health Check FAILED:', error.message); // LOG VISIBLE TERMINAL
     errorDetails += `Groq: ${error.message}; `;
   }
 
