@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, FileText, Bot, Youtube, Menu, Settings, ChevronRight, Search, Bell, LogOut, User } from 'lucide-react';
 import { signout } from '../login/actions';
+import { createClient } from '@/utils/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import RepurposeGenerator from '@/components/features/repurpose/RepurposeGenerator';
 import FileUploader from '@/components/features/rag/FileUploader';
 import ChatInterface from '@/components/features/rag/ChatInterface';
@@ -11,6 +13,21 @@ export default function WorkspacePage() {
   const [activeTab, setActiveTab] = useState<'repurpose' | 'rag'>('repurpose');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  // Dérivation des initiales et du nom
+  const fullName = user?.user_metadata?.full_name || 'Utilisateur';
+  const email = user?.email || '';
+  const initials = fullName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-slate-900">
@@ -90,14 +107,14 @@ export default function WorkspacePage() {
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-white cursor-pointer hover:ring-blue-100 transition-all"
                 >
-                    JS
+                    {initials}
                 </button>
 
                 {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 py-1 animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                            <p className="text-sm font-medium text-slate-900">John Smith</p>
-                            <p className="text-xs text-slate-500">john@example.com</p>
+                            <p className="text-sm font-medium text-slate-900 truncate">{fullName}</p>
+                            <p className="text-xs text-slate-500 truncate">{email}</p>
                         </div>
                         <button className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-gray-50 flex items-center gap-2">
                             <User className="w-4 h-4" /> Profil
