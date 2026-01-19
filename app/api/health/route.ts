@@ -1,13 +1,34 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
+import { generateWithGroq } from '@/lib/groq';
 
 export async function GET() {
+  let geminiStatus = 'down';
+  let groqStatus = 'down';
+  let errorDetails = '';
+
+  // Test Gemini
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
     await model.generateContent("ping");
-    return NextResponse.json({ status: 'ok' });
+    geminiStatus = 'ok';
   } catch (error: any) {
-    console.error('Health Check Error:', error);
-    return NextResponse.json({ status: 'error', message: error.message }, { status: 503 });
+    console.error('Gemini Health Check Error:', error.message);
+    errorDetails += `Gemini: ${error.message}; `;
   }
+
+  // Test Groq
+  try {
+    await generateWithGroq("System", "ping");
+    groqStatus = 'ok';
+  } catch (error: any) {
+    console.error('Groq Health Check Error:', error.message);
+    errorDetails += `Groq: ${error.message}; `;
+  }
+
+  if (geminiStatus === 'ok' || groqStatus === 'ok') {
+    return NextResponse.json({ status: 'operational', gemini: geminiStatus, groq: groqStatus });
+  }
+
+  return NextResponse.json({ status: 'down', message: errorDetails }, { status: 503 });
 }
