@@ -65,22 +65,22 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-4xl mx-auto">
+    <div className="flex flex-col h-full bg-white">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 custom-scrollbar">
         {messages.map((msg, idx) => (
-          <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${ 
-              msg.role === 'user' ? 'bg-black text-white' : 'bg-slate-200 text-slate-700'
+          <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''} group`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm font-medium shadow-sm ${ 
+              msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-slate-700'
             }`}>
-              {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+              {msg.role === 'user' ? 'JS' : <Bot className="w-5 h-5" />}
             </div>
             
-            <div className={`max-w-[85%] space-y-3`}>
-              <div className={`prose prose-slate max-w-none ${ 
+            <div className={`max-w-[80%] space-y-2`}>
+              <div className={`prose max-w-none text-sm leading-relaxed px-4 py-3 rounded-2xl shadow-sm ${ 
                 msg.role === 'user' 
-                  ? 'bg-slate-100 p-3 rounded-lg text-slate-900' 
-                  : 'text-slate-800'
+                  ? 'bg-blue-600 text-white rounded-tr-none' 
+                  : 'bg-gray-50 text-slate-800 border border-gray-100 rounded-tl-none'
               }`}>
                   {msg.role === 'assistant' ? (
                      <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
@@ -90,9 +90,9 @@ export default function ChatInterface() {
               </div>
               
               {msg.sources && msg.sources.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div className="flex flex-wrap gap-2 pl-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {msg.sources.map((source, i) => (
-                    <span key={i} className="text-[10px] uppercase tracking-wide font-medium bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-slate-500">
+                    <span key={i} className="text-[10px] font-medium text-slate-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded cursor-help hover:border-blue-300 transition-colors">
                       {source}
                     </span>
                   ))}
@@ -105,24 +105,26 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/80 backdrop-blur-sm sticky bottom-0">
-        <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center border border-slate-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all bg-white">
+      <div className="p-6 bg-white border-t border-gray-100">
+        <form onSubmit={sendMessage} className="relative flex items-center shadow-sm">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Posez une question sur vos appels d'offres..."
-            className="flex-1 p-4 bg-transparent border-none focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400"
+            placeholder="Posez une question sur vos documents..."
+            className="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-inner"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="p-2 mr-2 text-slate-400 hover:text-slate-900 disabled:opacity-30 transition-colors"
+            className="absolute right-2 p-1.5 bg-white border border-gray-200 text-slate-400 rounded-md hover:text-blue-600 hover:border-blue-600 disabled:opacity-50 disabled:hover:text-slate-400 disabled:hover:border-gray-200 transition-all shadow-sm"
           >
-            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
+            {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
-        <p className="text-center text-xs text-slate-400 mt-2">L'IA peut faire des erreurs. Vérifiez toujours les informations importantes.</p>
+        <div className="mt-2 text-center">
+            <span className="text-[10px] text-slate-400">Assistant alimenté par RAG • Confidentialité Enterprise</span>
+        </div>
       </div>
     </div>
   );

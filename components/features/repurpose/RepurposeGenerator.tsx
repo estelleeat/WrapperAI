@@ -48,79 +48,92 @@ export default function RepurposeGenerator() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold mb-6 text-slate-900">Générateur de contenu à partir de vidéo</h2>
+    <div className="p-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-slate-900">Nouveau Projet</h2>
+          <p className="text-sm text-slate-500 mt-1">Transformez une vidéo YouTube en contenu écrit optimisé.</p>
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Source : URL YouTube</label>
-            <input
-              type="url"
-              placeholder="https://www.youtube.com/watch?v=..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all"
-            />
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Section 1 */}
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">URL YouTube</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                placeholder="https://youtube.com/..."
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="flex-1 p-2.5 bg-white border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+              />
+            </div>
           </div>
 
-          <div className="relative flex items-center py-2">
-            <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider">OU Texte Manuel</span>
-            <div className="flex-grow border-t border-slate-200"></div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-2 text-xs font-medium text-gray-400 uppercase tracking-wider">Ou transcription manuelle</span>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Source : Transcription manuelle</label>
+          {/* Section 2 */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Texte Source</label>
             <textarea
-              placeholder="Collez ici le texte..."
+              placeholder="Collez votre transcription ici..."
               value={manualText}
               onChange={(e) => setManualText(e.target.value)}
               rows={6}
-              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all font-mono text-sm"
+              className="w-full p-3 bg-white border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-mono text-slate-600"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading || (!url && !manualText)}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Générer le contenu'}
-          </button>
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={isLoading || (!url && !manualText)}
+              className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-2.5 rounded-md font-medium text-sm transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : 'Générer le contenu'}
+            </button>
+          </div>
         </form>
         
         {error && (
-          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-md border border-red-100 text-sm">
+          <div className="mt-6 p-4 bg-red-50 text-red-700 border border-red-100 rounded-md text-sm flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
             {error}
           </div>
         )}
       </div>
 
       {result && (
-        <div className="border-t border-slate-200 pt-8">
-          <div className="flex border-b border-slate-200 mb-6">
+        <div className="mt-12 border-t border-gray-200 pt-8">
+          <div className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-lg w-fit mb-6">
             <button
               onClick={() => setActiveTab('blog')}
-              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'blog' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'blog' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              <FileText className="w-4 h-4" /> Article de Blog
+              <FileText className="w-4 h-4" /> Blog
             </button>
             <button
               onClick={() => setActiveTab('twitter')}
-              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'twitter' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'twitter' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              <Twitter className="w-4 h-4" /> Thread Twitter
+              <Twitter className="w-4 h-4" /> Twitter
             </button>
             <button
               onClick={() => setActiveTab('linkedin')}
-              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'linkedin' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'linkedin' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
             >
-              <Linkedin className="w-4 h-4" /> Post LinkedIn
+              <Linkedin className="w-4 h-4" /> LinkedIn
             </button>
           </div>
 
-          <div className="relative min-h-[200px]">
+          <div className="relative bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
             <button
               onClick={() => {
                 const textToCopy = activeTab === 'twitter' 
@@ -128,31 +141,37 @@ export default function RepurposeGenerator() {
                   : activeTab === 'blog' ? result.blogPost : result.linkedinPost;
                 copyToClipboard(textToCopy);
               }}
-              className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-slate-900 hover:bg-gray-50 rounded-md transition-all"
               title="Copier"
             >
-              <Copy className="w-5 h-5" />
+              <Copy className="w-4 h-4" />
             </button>
 
             {activeTab === 'blog' && (
               <article 
-                className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-2xl prose-a:text-blue-600"
+                className="prose prose-slate max-w-none prose-headings:font-bold prose-a:text-blue-600 prose-img:rounded-lg"
                 dangerouslySetInnerHTML={{ __html: result.blogPost }}
               />
             )}
 
             {activeTab === 'twitter' && (
-              <div className="space-y-6">
+              <div className="space-y-4 max-w-2xl">
                 {result.twitterThread.map((tweet, index) => (
-                  <div key={index} className="pl-4 border-l-2 border-slate-200 py-1">
-                    <p className="text-slate-800 whitespace-pre-wrap">{tweet}</p>
+                  <div key={index} className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                       <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">{index + 1}</div>
+                       {index !== result.twitterThread.length - 1 && <div className="w-0.5 flex-1 bg-slate-100 my-1"></div>}
+                    </div>
+                    <div className="pb-6">
+                      <p className="text-slate-800 whitespace-pre-wrap text-sm leading-relaxed">{tweet}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
             {activeTab === 'linkedin' && (
-              <div className="whitespace-pre-wrap text-slate-800 leading-relaxed font-sans">
+              <div className="whitespace-pre-wrap text-slate-800 leading-relaxed font-sans text-sm max-w-3xl">
                 {result.linkedinPost}
               </div>
             )}
