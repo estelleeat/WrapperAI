@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, FileText, Bot, Youtube, Menu, Settings, ChevronRight, Search, Bell, LogOut, User, MessageSquare, Box } from 'lucide-react';
 import { signout } from '../login/actions';
