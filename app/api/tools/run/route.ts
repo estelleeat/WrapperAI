@@ -56,7 +56,8 @@ export async function POST(req: Request) {
     } catch (geminiError) {
         console.warn("Gemini tool run failed, trying Groq...", geminiError);
         try {
-            text = await generateWithGroq("Tu es un assistant expert qui utilise le contexte fourni.", augmentedPrompt);
+            // Mode texte pour l'exécution (pas de JSON forcé)
+            text = await generateWithGroq("Tu es un assistant expert.", augmentedPrompt, false);
         } catch (groqError: any) {
             throw new Error(`Échec exécution outil: ${groqError.message}`);
         }

@@ -19,7 +19,7 @@ export async function GET() {
 
   // Test Groq
   try {
-    await generateWithGroq("System", "ping");
+    await generateWithGroq("System", "ping", false);
     groqStatus = 'ok';
   } catch (error: any) {
     console.error('❌ Groq Health Check FAILED:', error.message); // LOG VISIBLE TERMINAL
