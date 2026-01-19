@@ -41,29 +41,24 @@ export async function POST(req: Request) {
         );
     }
 
-    // 2. Chunking (Découpage simpliste pour le MVP)
-    // On coupe tous les 1000 caractères avec un overlap de 200
-    const chunkSize = 1000;
-    const overlap = 200;
+    // 2. Chunking (Segments plus grands pour rapidité)
+    const chunkSize = 4000;
+    const overlap = 400;
     const chunks = [];
     
     for (let i = 0; i < text.length; i += (chunkSize - overlap)) {
       chunks.push(text.slice(i, i + chunkSize));
     }
 
-    console.log(`Traitement de ${chunks.length} chunks...`);
+    console.log(`Traitement de ${chunks.length} segments...`);
 
     // 3. Génération des embeddings et stockage
-    // On le fait en séquentiel pour éviter le rate limit de l'API Google
     let savedCount = 0;
     
     for (const chunk of chunks) {
-      if (chunk.trim().length < 50) continue; // Ignorer les chunks trop petits
+      if (chunk.trim().length < 50) continue;
 
       try {
-        // Petit délai pour éviter le 429 (Rate Limit)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
         const embedding = await getEmbedding(chunk);
         
         const { error } = await supabase.from('documents').insert({
@@ -72,34 +67,28 @@ export async function POST(req: Request) {
           embedding,
         });
 
-        if (error) {
-          console.error('Supabase error:', error);
-          // Si l'erreur vient de la base de données (ex: contrainte), on pourrait vouloir arrêter
-        } else {
-          savedCount++;
-        }
+        if (!error) savedCount++;
       } catch (e: any) {
         console.error('Embedding processing error:', e);
         if (e.message?.includes('429')) {
            return NextResponse.json(
-             { error: 'Quota API dépassé pendant le traitement. Veuillez réessayer plus tard.' },
+             { error: 'Quota API dépassé. Veuillez réessayer dans une minute.' },
              { status: 429 }
            );
         }
-        // On continue même s'il y a une erreur sur un chunk (sauf si c'est critique comme 429)
       }
     }
 
     if (savedCount === 0) {
          return NextResponse.json(
-            { error: "Aucun segment n'a pu être sauvegardé (problème base de données ou API)." },
+            { error: "Erreur lors de l'indexation du document." },
             { status: 500 }
         );
     }
 
     return NextResponse.json({ 
       success: true, 
-      message: `${savedCount} segments indexés avec succès` 
+      message: "Document analysé et ajouté avec succès" 
     });
 
   } catch (error: any) {
