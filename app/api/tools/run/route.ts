@@ -62,7 +62,10 @@ export async function POST(req: Request) {
         }
     }
 
-    return NextResponse.json({ result: text });
+    return NextResponse.json({ 
+        result: text,
+        sources: documents?.map((d: any) => d.metadata.filename) || []
+    });
 
   } catch (error: any) {
     console.error('Tool Run Error:', error);
