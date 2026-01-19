@@ -157,10 +157,10 @@ export async function POST(req: Request) {
         result = await model.generateContent(prompt);
         break; // Succès, on sort de la boucle
       } catch (e: any) {
-        if (e.message?.includes('429') && retryCount < maxRetries - 1) {
+        if ((e.message?.includes('429') || e.message?.includes('503')) && retryCount < maxRetries - 1) {
           retryCount++;
           const delay = Math.pow(2, retryCount) * 1000 + (Math.random() * 1000); // 2s, 4s... + jitter
-          console.log(`Quota 429 hit. Retrying in ${Math.round(delay)}ms (Attempt ${retryCount}/${maxRetries})...`);
+          console.log(`Quota 429/503 hit. Retrying in ${Math.round(delay)}ms (Attempt ${retryCount}/${maxRetries})...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
           throw e; // Erreur fatale ou max retries atteints
