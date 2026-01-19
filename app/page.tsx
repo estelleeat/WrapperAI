@@ -1,110 +1,151 @@
-'use client';
+import Link from 'next/link';
+import { ChevronRight, Youtube, Bot, Zap, Shield, Sparkles } from 'lucide-react';
 
-import { useState } from 'react';
-import { LayoutDashboard, FileText, Bot, Youtube, Menu, Settings, ChevronRight, Search, Bell } from 'lucide-react';
-import RepurposeGenerator from '@/components/features/repurpose/RepurposeGenerator';
-import FileUploader from '@/components/features/rag/FileUploader';
-import ChatInterface from '@/components/features/rag/ChatInterface';
-
-export default function WorkspacePage() {
-  const [activeTab, setActiveTab] = useState<'repurpose' | 'rag'>('repurpose');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+export default function LandingPage() {
   return (
-    <div className="flex h-screen bg-gray-50 font-sans text-slate-900">
-      {/* Professional Sidebar - Dark Slate */}
-      <aside className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-slate-900 border-r border-slate-800 transition-all duration-300 overflow-hidden flex flex-col shrink-0 text-slate-300`}>
-        <div className="h-14 flex items-center px-4 border-b border-slate-800">
-          <div className="flex items-center gap-2 font-semibold text-white tracking-tight">
-            <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[10px]">W</div>
+    <div className="min-h-screen bg-white text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
+            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-[10px] text-white">W</div>
             WrapperAI
           </div>
-        </div>
-        
-        <nav className="flex-1 px-2 py-6 space-y-1">
-          <div className="px-3 mb-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Apps</div>
           
-          <button
-            onClick={() => setActiveTab('repurpose')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all ${activeTab === 'repurpose' ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white'}`}
-          >
-            <Youtube className="w-4 h-4 opacity-80" />
-            Studio Vidéo
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('rag')}
-            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all ${activeTab === 'rag' ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white'}`}
-          >
-            <Bot className="w-4 h-4 opacity-80" />
-            Assistant RAG
-          </button>
-        </nav>
-
-        {activeTab === 'rag' && (
-          <div className="p-4 border-t border-slate-800 bg-slate-900">
-             <FileUploader />
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#features" className="hover:text-blue-600 transition-colors">Fonctionnalités</a>
+            <a href="#solutions" className="hover:text-blue-600 transition-colors">Solutions</a>
+            <a href="#pricing" className="hover:text-blue-600 transition-colors">Tarifs</a>
           </div>
-        )}
-        
-        <div className="p-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
-            <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                System Operational
+
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors">
+              Connexion
+            </Link>
+            <Link href="/register" className="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm">
+              S'inscrire
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-bold mb-6 animate-fade-in">
+            <Sparkles className="w-3 h-3" /> NOUVEAUTÉ : ASSISTANT RAG V1.0
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-[1.1]">
+            Propulsez votre productivité <br /> 
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 text-glow">avec l'intelligence artificielle.</span>
+          </h1>
+          <p className="max-w-2xl mx-auto text-lg text-slate-600 mb-10 leading-relaxed">
+            WrapperAI centralise vos outils IA indispensables. Réutilisez vos contenus vidéo et interrogez vos documents techniques en toute simplicité.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/workspace" className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 group">
+              Commencer gratuitement <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <button className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all">
+              Voir la démo
+            </button>
+          </div>
+          
+          <div className="mt-16 relative max-w-5xl mx-auto">
+             <div className="absolute inset-0 bg-blue-500/10 blur-[120px] rounded-full"></div>
+             <div className="relative border border-slate-200 rounded-2xl shadow-2xl overflow-hidden bg-slate-50 p-2">
+                <div className="bg-white rounded-xl border border-slate-100 shadow-inner h-[400px] flex items-center justify-center text-slate-300 italic">
+                   Aperçu de l'interface WrapperAI
+                </div>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4 text-glow">Deux outils, une seule plateforme.</h2>
+            <p className="text-slate-600">Tout ce dont vous avez besoin pour gérer vos contenus et documents.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Tool 1 */}
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+              <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-6 group-hover:scale-110 transition-transform">
+                <Youtube className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-slate-900">Studio de Recréation Vidéo</h3>
+              <p className="text-slate-600 mb-6">
+                Transformez instantanément n'importe quelle vidéo YouTube en articles de blog optimisés, threads Twitter percutants ou posts LinkedIn professionnels.
+              </p>
+              <ul className="space-y-3">
+                {['Extraction automatique de transcript', 'IA Marketing spécialisée', 'Export multi-format'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-500">
+                    <Zap className="w-4 h-4 text-blue-500" /> {item}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <Settings className="w-3 h-3 hover:text-white cursor-pointer" />
-        </div>
-      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        {/* Header - Light & Minimal */}
-        <header className="h-14 border-b border-gray-200 bg-white flex items-center px-6 justify-between shrink-0">
-           <div className="flex items-center gap-4">
-             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1.5 text-slate-500 hover:bg-gray-100 rounded-md transition-colors">
-               <Menu className="w-5 h-5" />
-             </button>
-             <nav className="flex items-center text-sm text-slate-500">
-               <span className="hover:text-slate-900 cursor-pointer">Dashboard</span>
-               <ChevronRight className="w-4 h-4 mx-1 text-slate-400" />
-               <span className="font-medium text-slate-900">
-                 {activeTab === 'repurpose' ? 'Création de Contenu' : 'Base de Connaissances'}
-               </span>
-             </nav>
-           </div>
-           
-           <div className="flex items-center gap-4">
-              <div className="relative hidden md:block">
-                  <Search className="w-4 h-4 absolute left-2.5 top-2.5 text-slate-400" />
-                  <input type="text" placeholder="Rechercher..." className="pl-9 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all w-64" />
+            {/* Tool 2 */}
+            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
+                <Bot className="w-6 h-6" />
               </div>
-              <button className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors relative">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-              </button>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shadow-sm ring-2 ring-white cursor-pointer">
-                JS
-              </div>
-           </div>
-        </header>
-
-        {/* Workspace */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
-          <div className="max-w-6xl mx-auto h-full">
-            {activeTab === 'repurpose' && (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[500px] animate-in fade-in slide-in-from-bottom-2 duration-500">
-                 <RepurposeGenerator />
-              </div>
-            )}
-
-            {activeTab === 'rag' && (
-               <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
-                 <ChatInterface />
-               </div>
-            )}
+              <h3 className="text-xl font-bold mb-4 text-slate-900">Assistant Appels d'Offres (RAG)</h3>
+              <p className="text-slate-600 mb-6">
+                Importez vos PDF et laissez notre IA répondre à vos questions complexes. Idéal pour analyser des dossiers techniques ou préparer des réponses aux appels d'offres.
+              </p>
+              <ul className="space-y-3">
+                {['Analyse sémantique profonde', 'Citations des sources exactes', 'Stockage vectoriel sécurisé'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-500">
+                    <Zap className="w-4 h-4 text-blue-500" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-20 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12">
+          <div className="flex flex-col items-center text-center">
+            <Shield className="w-8 h-8 text-slate-400 mb-4" />
+            <h4 className="font-bold text-slate-900 mb-2">Données Sécurisées</h4>
+            <p className="text-sm text-slate-500">Vos documents et transcripts sont chiffrés et privés.</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <Zap className="w-8 h-8 text-slate-400 mb-4" />
+            <h4 className="font-bold text-slate-900 mb-2">Vitesse Éclair</h4>
+            <p className="text-sm text-slate-500">Analyse de PDF de 50 pages en moins de 30 secondes.</p>
+          </div>
+          <div className="flex flex-col items-center text-center">
+            <Sparkles className="w-8 h-8 text-slate-400 mb-4" />
+            <h4 className="font-bold text-slate-900 mb-2">Qualité Premium</h4>
+            <p className="text-sm text-slate-500">Utilise les derniers modèles de langage les plus performants.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 py-12 px-6 text-slate-400">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-2 font-bold text-white text-lg">
+            <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center text-[8px]">W</div>
+            WrapperAI
+          </div>
+          <div className="flex gap-8 text-sm">
+            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <a href="#" className="hover:text-white transition-colors">Mentions Légales</a>
+            <a href="#" className="hover:text-white transition-colors">Twitter</a>
+          </div>
+          <p className="text-xs">© 2026 WrapperAI. Tous droits réservés.</p>
+        </div>
+      </footer>
     </div>
   );
 }
