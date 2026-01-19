@@ -16,7 +16,7 @@ export async function generateWithGroq(systemPrompt: string, userContent: string
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userContent },
     ],
-    model: 'llama3-70b-8192', // Modèle performant et gratuit sur Groq
+    model: 'llama-3.3-70b-versatile', // Modèle à jour et performant sur Groq
     temperature: 0.7,
     response_format: { type: 'json_object' } // Groq supporte le mode JSON
   });
