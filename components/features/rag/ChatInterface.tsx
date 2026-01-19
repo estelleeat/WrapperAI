@@ -65,38 +65,34 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-4xl mx-auto">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
         {messages.map((msg, idx) => (
-          <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${ 
-              msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'
+          <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${ 
+              msg.role === 'user' ? 'bg-black text-white' : 'bg-slate-200 text-slate-700'
             }`}>
-              {msg.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
+              {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
             
-            <div className={`max-w-[80%] space-y-2`}>
-              <div className={`p-3 rounded-lg shadow-sm ${ 
+            <div className={`max-w-[85%] space-y-3`}>
+              <div className={`prose prose-slate max-w-none ${ 
                 msg.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-br-none' 
-                  : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
+                  ? 'bg-slate-100 p-3 rounded-lg text-slate-900' 
+                  : 'text-slate-800'
               }`}>
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  {/* Note: Pour la sécurité, éviter dangerouslySetInnerHTML avec l'input utilisateur en prod */}
                   {msg.role === 'assistant' ? (
                      <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
                   ) : (
                     msg.content
                   )}
-                </div>
               </div>
               
               {msg.sources && msg.sources.length > 0 && (
-                <div className="text-xs text-slate-500 flex gap-2 flex-wrap">
-                  Sources : 
+                <div className="flex flex-wrap gap-2 pt-1">
                   {msg.sources.map((source, i) => (
-                    <span key={i} className="bg-slate-200 px-2 py-1 rounded text-slate-600">
+                    <span key={i} className="text-[10px] uppercase tracking-wide font-medium bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-slate-500">
                       {source}
                     </span>
                   ))}
@@ -109,22 +105,25 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Area */}
-      <form onSubmit={sendMessage} className="p-4 bg-white border-t border-slate-200 flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Posez une question sur vos documents..."
-          className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !input.trim()}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center"
-        >
-          {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
-        </button>
-      </form>
+      <div className="p-4 bg-white/80 backdrop-blur-sm sticky bottom-0">
+        <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center border border-slate-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all bg-white">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Posez une question sur vos appels d'offres..."
+            className="flex-1 p-4 bg-transparent border-none focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="p-2 mr-2 text-slate-400 hover:text-slate-900 disabled:opacity-30 transition-colors"
+          >
+            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
+          </button>
+        </form>
+        <p className="text-center text-xs text-slate-400 mt-2">L'IA peut faire des erreurs. Vérifiez toujours les informations importantes.</p>
+      </div>
     </div>
   );
 }

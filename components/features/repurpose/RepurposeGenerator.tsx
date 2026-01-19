@@ -48,82 +48,79 @@ export default function RepurposeGenerator() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 className="text-2xl font-bold mb-4 text-slate-800">Repurpose Vidéo YouTube</h2>
+    <div className="max-w-5xl mx-auto space-y-8">
+      <div>
+        <h2 className="text-xl font-semibold mb-6 text-slate-900">Générateur de contenu à partir de vidéo</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Option 1 : Via URL YouTube</label>
+            <label className="text-sm font-medium text-slate-700">Source : URL YouTube</label>
             <input
               type="url"
               placeholder="https://www.youtube.com/watch?v=..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all"
             />
           </div>
 
           <div className="relative flex items-center py-2">
             <div className="flex-grow border-t border-slate-200"></div>
-            <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">OU</span>
+            <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider">OU Texte Manuel</span>
             <div className="flex-grow border-t border-slate-200"></div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">Option 2 : Coller le texte (Si l'URL ne fonctionne pas)</label>
-            <div className="text-xs text-slate-500 mb-1">
-              Astuce : Sur YouTube, cliquez sur "... Plus" sous la vidéo &gt; "Afficher la transcription" &gt; Copiez tout le texte.
-            </div>
+            <label className="text-sm font-medium text-slate-700">Source : Transcription manuelle</label>
             <textarea
-              placeholder="Collez ici la transcription de la vidéo..."
+              placeholder="Collez ici le texte..."
               value={manualText}
               onChange={(e) => setManualText(e.target.value)}
-              rows={4}
-              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              rows={6}
+              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all font-mono text-sm"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading || (!url && !manualText)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Générer le contenu'}
           </button>
         </form>
         
         {error && (
-          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-100">
+          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-md border border-red-100 text-sm">
             {error}
           </div>
         )}
       </div>
 
       {result && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="flex border-b border-slate-200 bg-slate-50 overflow-x-auto">
+        <div className="border-t border-slate-200 pt-8">
+          <div className="flex border-b border-slate-200 mb-6">
             <button
               onClick={() => setActiveTab('blog')}
-              className={`flex-1 min-w-[120px] py-4 font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'blog' ? 'bg-white border-t-2 border-blue-600 text-blue-600' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'blog' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <FileText className="w-4 h-4" /> Blog
+              <FileText className="w-4 h-4" /> Article de Blog
             </button>
             <button
               onClick={() => setActiveTab('twitter')}
-              className={`flex-1 min-w-[120px] py-4 font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'twitter' ? 'bg-white border-t-2 border-blue-600 text-blue-600' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'twitter' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <Twitter className="w-4 h-4" /> Twitter
+              <Twitter className="w-4 h-4" /> Thread Twitter
             </button>
             <button
               onClick={() => setActiveTab('linkedin')}
-              className={`flex-1 min-w-[120px] py-4 font-medium flex items-center justify-center gap-2 transition-all ${activeTab === 'linkedin' ? 'bg-white border-t-2 border-blue-600 text-blue-600' : 'text-slate-600 hover:bg-slate-100'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'linkedin' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <Linkedin className="w-4 h-4" /> LinkedIn
+              <Linkedin className="w-4 h-4" /> Post LinkedIn
             </button>
           </div>
 
-          <div className="p-6 relative min-h-[200px]">
+          <div className="relative min-h-[200px]">
             <button
               onClick={() => {
                 const textToCopy = activeTab === 'twitter' 
@@ -131,26 +128,23 @@ export default function RepurposeGenerator() {
                   : activeTab === 'blog' ? result.blogPost : result.linkedinPost;
                 copyToClipboard(textToCopy);
               }}
-              className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors text-slate-600"
-              title="Copier le contenu"
+              className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+              title="Copier"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-5 h-5" />
             </button>
 
             {activeTab === 'blog' && (
               <article 
-                className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl"
+                className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-2xl prose-a:text-blue-600"
                 dangerouslySetInnerHTML={{ __html: result.blogPost }}
               />
             )}
 
             {activeTab === 'twitter' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {result.twitterThread.map((tweet, index) => (
-                  <div key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-100 relative">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 block">
-                      Tweet {index + 1}/{result.twitterThread.length}
-                    </span>
+                  <div key={index} className="pl-4 border-l-2 border-slate-200 py-1">
                     <p className="text-slate-800 whitespace-pre-wrap">{tweet}</p>
                   </div>
                 ))}
@@ -158,7 +152,7 @@ export default function RepurposeGenerator() {
             )}
 
             {activeTab === 'linkedin' && (
-              <div className="whitespace-pre-wrap text-slate-800 leading-relaxed">
+              <div className="whitespace-pre-wrap text-slate-800 leading-relaxed font-sans">
                 {result.linkedinPost}
               </div>
             )}
