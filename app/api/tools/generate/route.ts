@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
+import { generateWithGroq } from '@/lib/groq';
 
 export async function POST(req: Request) {
   try {
@@ -46,12 +47,28 @@ export async function POST(req: Request) {
       Réponds UNIQUEMENT le JSON. Pas de markdown, pas de texte avant/après.
     `;
 
-    const result = await model.generateContent(systemPrompt);
-    const response = await result.response;
-    let text = response.text();
+    // Retry logic with Groq Fallback
+    let text = '';
+    try {
+        const result = await model.generateContent(systemPrompt);
+        const response = await result.response;
+        text = response.text();
+    } catch (geminiError) {
+        console.warn("Gemini tool gen failed, trying Groq...", geminiError);
+        try {
+            text = await generateWithGroq("Tu es un expert JSON. Réponds uniquement avec le JSON demandé.", systemPrompt);
+        } catch (groqError: any) {
+            throw new Error(`Échec génération outil: ${groqError.message}`);
+        }
+    }
     
     // Nettoyage au cas où l'IA mettrait des backticks
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // Extraire le JSON si entouré de texte
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+        text = jsonMatch[0];
+    }
 
     const toolConfig = JSON.parse(text);
 

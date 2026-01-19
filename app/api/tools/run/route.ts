@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
+import { generateWithGroq } from '@/lib/groq';
 
 export async function POST(req: Request) {
   try {
@@ -15,10 +16,20 @@ export async function POST(req: Request) {
       finalPrompt = finalPrompt.replace(new RegExp(`{{${key}}}`, 'g'), value as string);
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-    const result = await model.generateContent(finalPrompt);
-    const response = await result.response;
-    const text = response.text();
+    let text = '';
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const result = await model.generateContent(finalPrompt);
+        const response = await result.response;
+        text = response.text();
+    } catch (geminiError) {
+        console.warn("Gemini tool run failed, trying Groq...", geminiError);
+        try {
+            text = await generateWithGroq("Tu es un assistant utile.", finalPrompt);
+        } catch (groqError: any) {
+            throw new Error(`Échec exécution outil: ${groqError.message}`);
+        }
+    }
 
     return NextResponse.json({ result: text });
 
