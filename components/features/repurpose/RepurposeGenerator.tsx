@@ -48,79 +48,79 @@ export default function RepurposeGenerator() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 text-zinc-300">
+    <div className="max-w-5xl mx-auto space-y-8">
       <div>
-        <h2 className="text-xl font-bold mb-8 text-white tracking-tight">Studio de Création</h2>
+        <h2 className="text-xl font-semibold mb-6 text-slate-900">Générateur de contenu à partir de vidéo</h2>
         
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Source Vidéo</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Source : URL YouTube</label>
             <input
               type="url"
               placeholder="https://www.youtube.com/watch?v=..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full p-4 bg-zinc-900 border border-zinc-800 rounded-sm text-white placeholder:text-zinc-600 focus:ring-1 focus:ring-white focus:border-white focus:outline-none transition-all"
+              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all"
             />
           </div>
 
-          <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-zinc-800"></div>
-            <span className="flex-shrink-0 mx-4 text-zinc-600 text-[10px] font-mono uppercase">OR MANUAL INPUT</span>
-            <div className="flex-grow border-t border-zinc-800"></div>
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-400 text-xs uppercase tracking-wider">OU Texte Manuel</span>
+            <div className="flex-grow border-t border-slate-200"></div>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Transcription</label>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Source : Transcription manuelle</label>
             <textarea
-              placeholder="Collez le texte brut ici..."
+              placeholder="Collez ici le texte..."
               value={manualText}
               onChange={(e) => setManualText(e.target.value)}
               rows={6}
-              className="w-full p-4 bg-zinc-900 border border-zinc-800 rounded-sm text-white placeholder:text-zinc-600 focus:ring-1 focus:ring-white focus:border-white focus:outline-none transition-all font-mono text-xs leading-relaxed"
+              className="w-full p-3 bg-white border border-slate-300 rounded-md focus:ring-2 focus:ring-black focus:border-transparent focus:outline-none transition-all font-mono text-sm"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading || (!url && !manualText)}
-            className="w-full bg-white hover:bg-zinc-200 text-black px-6 py-4 rounded-sm font-bold text-sm tracking-wide transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 uppercase"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-md font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : 'Lancer la génération'}
+            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Générer le contenu'}
           </button>
         </form>
         
         {error && (
-          <div className="mt-6 p-4 bg-red-950/30 text-red-400 border border-red-900/50 text-sm font-mono">
-            Error: {error}
+          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-md border border-red-100 text-sm">
+            {error}
           </div>
         )}
       </div>
 
       {result && (
-        <div className="border-t border-zinc-800 pt-10">
-          <div className="flex border-b border-zinc-800 mb-8">
+        <div className="border-t border-slate-200 pt-8">
+          <div className="flex border-b border-slate-200 mb-6">
             <button
               onClick={() => setActiveTab('blog')}
-              className={`px-6 py-4 font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-b-2 ${activeTab === 'blog' ? 'border-white text-white' : 'border-transparent text-zinc-600 hover:text-zinc-300'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'blog' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <FileText className="w-4 h-4" /> Article
+              <FileText className="w-4 h-4" /> Article de Blog
             </button>
             <button
               onClick={() => setActiveTab('twitter')}
-              className={`px-6 py-4 font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-b-2 ${activeTab === 'twitter' ? 'border-white text-white' : 'border-transparent text-zinc-600 hover:text-zinc-300'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'twitter' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <Twitter className="w-4 h-4" /> Thread
+              <Twitter className="w-4 h-4" /> Thread Twitter
             </button>
             <button
               onClick={() => setActiveTab('linkedin')}
-              className={`px-6 py-4 font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all border-b-2 ${activeTab === 'linkedin' ? 'border-white text-white' : 'border-transparent text-zinc-600 hover:text-zinc-300'}`}
+              className={`px-6 py-3 font-medium text-sm flex items-center gap-2 transition-all border-b-2 ${activeTab === 'linkedin' ? 'border-black text-black' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
             >
-              <Linkedin className="w-4 h-4" /> LinkedIn
+              <Linkedin className="w-4 h-4" /> Post LinkedIn
             </button>
           </div>
 
-          <div className="relative min-h-[200px] bg-zinc-900/20 p-6 border border-zinc-800 rounded-sm">
+          <div className="relative min-h-[200px]">
             <button
               onClick={() => {
                 const textToCopy = activeTab === 'twitter' 
@@ -128,15 +128,15 @@ export default function RepurposeGenerator() {
                   : activeTab === 'blog' ? result.blogPost : result.linkedinPost;
                 copyToClipboard(textToCopy);
               }}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors"
-              title="Copy to clipboard"
+              className="absolute top-0 right-0 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+              title="Copier"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="w-5 h-5" />
             </button>
 
             {activeTab === 'blog' && (
               <article 
-                className="prose prose-invert max-w-none prose-headings:font-bold prose-h1:text-2xl prose-a:text-white prose-a:underline hover:prose-a:text-zinc-300"
+                className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-2xl prose-a:text-blue-600"
                 dangerouslySetInnerHTML={{ __html: result.blogPost }}
               />
             )}
@@ -144,15 +144,15 @@ export default function RepurposeGenerator() {
             {activeTab === 'twitter' && (
               <div className="space-y-6">
                 {result.twitterThread.map((tweet, index) => (
-                  <div key={index} className="pl-4 border-l-2 border-zinc-700 py-1">
-                    <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed">{tweet}</p>
+                  <div key={index} className="pl-4 border-l-2 border-slate-200 py-1">
+                    <p className="text-slate-800 whitespace-pre-wrap">{tweet}</p>
                   </div>
                 ))}
               </div>
             )}
 
             {activeTab === 'linkedin' && (
-              <div className="whitespace-pre-wrap text-zinc-300 leading-relaxed font-sans">
+              <div className="whitespace-pre-wrap text-slate-800 leading-relaxed font-sans">
                 {result.linkedinPost}
               </div>
             )}

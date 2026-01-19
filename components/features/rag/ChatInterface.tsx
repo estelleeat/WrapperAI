@@ -67,20 +67,20 @@ export default function ChatInterface() {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-4xl mx-auto">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-8">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 border ${ 
-              msg.role === 'user' ? 'bg-white border-white text-black' : 'bg-black border-zinc-700 text-zinc-400'
+            <div className={`w-8 h-8 rounded-sm flex items-center justify-center flex-shrink-0 ${ 
+              msg.role === 'user' ? 'bg-black text-white' : 'bg-slate-200 text-slate-700'
             }`}>
               {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
             </div>
             
             <div className={`max-w-[85%] space-y-3`}>
-              <div className={`prose max-w-none text-sm leading-relaxed ${ 
+              <div className={`prose prose-slate max-w-none ${ 
                 msg.role === 'user' 
-                  ? 'text-zinc-300 text-right' 
-                  : 'text-zinc-300 prose-invert prose-p:text-zinc-300 prose-headings:text-white prose-strong:text-white prose-code:text-white prose-code:bg-zinc-900 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-sm'
+                  ? 'bg-slate-100 p-3 rounded-lg text-slate-900' 
+                  : 'text-slate-800'
               }`}>
                   {msg.role === 'assistant' ? (
                      <div dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
@@ -90,9 +90,9 @@ export default function ChatInterface() {
               </div>
               
               {msg.sources && msg.sources.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2">
+                <div className="flex flex-wrap gap-2 pt-1">
                   {msg.sources.map((source, i) => (
-                    <span key={i} className="text-[10px] font-mono text-zinc-500 border border-zinc-800 px-2 py-1 rounded-sm">
+                    <span key={i} className="text-[10px] uppercase tracking-wide font-medium bg-slate-100 border border-slate-200 px-2 py-1 rounded-md text-slate-500">
                       {source}
                     </span>
                   ))}
@@ -105,24 +105,24 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-black sticky bottom-0">
-        <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center border border-zinc-700 bg-zinc-950 rounded-md focus-within:border-zinc-500 transition-all">
+      <div className="p-4 bg-white/80 backdrop-blur-sm sticky bottom-0">
+        <form onSubmit={sendMessage} className="relative max-w-4xl mx-auto flex items-center border border-slate-300 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-black focus-within:border-transparent transition-all bg-white">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Posez une question sur vos appels d'offres..."
-            className="flex-1 p-4 bg-transparent border-none focus:ring-0 outline-none text-zinc-200 placeholder:text-zinc-600"
+            className="flex-1 p-4 bg-transparent border-none focus:ring-0 outline-none text-slate-900 placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="p-2 mr-2 text-zinc-500 hover:text-white disabled:opacity-30 transition-colors"
+            className="p-2 mr-2 text-slate-400 hover:text-slate-900 disabled:opacity-30 transition-colors"
           >
             {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Send className="w-5 h-5" />}
           </button>
         </form>
-        <p className="text-center text-[10px] text-zinc-700 mt-3 font-mono">IA générative expérimentale.</p>
+        <p className="text-center text-xs text-slate-400 mt-2">L'IA peut faire des erreurs. Vérifiez toujours les informations importantes.</p>
       </div>
     </div>
   );
