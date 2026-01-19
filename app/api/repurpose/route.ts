@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
+import { generateWithGroq } from '@/lib/groq';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
@@ -151,33 +152,43 @@ export async function POST(req: Request) {
     let result;
     let retryCount = 0;
     const maxRetries = 3;
+    let parsedContent;
 
     while (retryCount < maxRetries) {
       try {
         result = await model.generateContent(prompt);
-        break; // Succès, on sort de la boucle
+        const response = await result.response;
+        const text = response.text();
+        if (!text) throw new Error("Réponse vide de Gemini");
+        parsedContent = JSON.parse(text);
+        break; // Succès
       } catch (e: any) {
+        // Si erreur quota ou serveur (429/503), on retry un peu
         if ((e.message?.includes('429') || e.message?.includes('503')) && retryCount < maxRetries - 1) {
           retryCount++;
-          const delay = Math.pow(2, retryCount) * 1000 + (Math.random() * 1000); // 2s, 4s... + jitter
-          console.log(`Quota 429/503 hit. Retrying in ${Math.round(delay)}ms (Attempt ${retryCount}/${maxRetries})...`);
+          const delay = Math.pow(2, retryCount) * 1000 + (Math.random() * 1000);
+          console.log(`Quota 429/503 hit. Retrying in ${Math.round(delay)}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
-          throw e; // Erreur fatale ou max retries atteints
+          // Si c'est le dernier essai ou une autre erreur, on tente le FALLBACK GROQ
+          console.warn("Gemini failed, switching to Groq fallback...", e.message);
+          try {
+             const groqResponse = await generateWithGroq(
+                "Tu es un expert en marketing de contenu. Réponds UNIQUEMENT au format JSON.", 
+                prompt
+             );
+             parsedContent = JSON.parse(groqResponse);
+             console.log("✅ Groq fallback success");
+             break; // Sortir de la boucle de retry Gemini car on a réussi avec Groq
+          } catch (groqError: any) {
+             console.error("❌ Groq fallback failed:", groqError.message);
+             throw e; // On renvoie l'erreur originale de Gemini si tout échoue
+          }
         }
       }
     }
     
-    if (!result) throw new Error("Échec après plusieurs tentatives");
-
-    const response = await result.response;
-    const text = response.text();
-    
-    if (!text) {
-      throw new Error("Pas de réponse de l'IA");
-    }
-
-    const parsedContent = JSON.parse(text);
+    if (!parsedContent) throw new Error("Échec de la génération (Gemini & Groq)");
 
     return NextResponse.json(parsedContent);
 
