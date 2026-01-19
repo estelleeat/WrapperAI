@@ -62,15 +62,20 @@ export async function POST(req: Request) {
         }
     }
     
-    // Nettoyage au cas où l'IA mettrait des backticks
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    // Extraire le JSON si entouré de texte
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Nettoyage agressif
+    let cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-        text = jsonMatch[0];
+        cleanText = jsonMatch[0];
     }
 
-    const toolConfig = JSON.parse(text);
+    let toolConfig;
+    try {
+        toolConfig = JSON.parse(cleanText);
+    } catch (parseError) {
+        console.error("JSON Parse Error. Raw text:", text);
+        throw new Error("L'IA a généré un format invalide. Réessayez.");
+    }
 
     return NextResponse.json(toolConfig);
 
