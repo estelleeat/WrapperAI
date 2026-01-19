@@ -150,11 +150,44 @@ export default function RepurposeGenerator() {
             
             {/* BLOG VIEW */}
             {activeTab === 'blog' && (
-              <div className="max-w-2xl mx-auto bg-white shadow-sm border border-gray-100 rounded-lg p-8 md:p-12">
+              <div className="max-w-3xl mx-auto bg-white min-h-[600px] p-10 md:p-16 shadow-sm border border-gray-100 rounded-sm">
+                <div className="mb-10 pb-8 border-b border-gray-100">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 font-medium uppercase tracking-widest mb-4">
+                        <span className="bg-slate-100 px-2 py-1 rounded">Article</span>
+                        <span>•</span>
+                        <span>5 min de lecture</span>
+                        <span>•</span>
+                        <span>{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                    </div>
+                    {/* On extrait le H1 du contenu HTML s'il existe, sinon on met un placeholder visuel */}
+                    {!result.blogPost.includes('<h1') && (
+                        <h1 className="text-4xl font-extrabold text-slate-900 mb-4 leading-tight">Titre de l'article généré</h1>
+                    )}
+                </div>
+                
                 <article 
-                  className="prose prose-slate max-w-none prose-headings:font-bold prose-h1:text-3xl prose-a:text-blue-600 prose-img:rounded-xl"
+                  className="prose prose-lg prose-slate max-w-none 
+                  prose-headings:font-bold prose-headings:text-slate-900 
+                  prose-p:text-slate-700 prose-p:leading-8 
+                  prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                  prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r
+                  prose-img:rounded-xl prose-img:shadow-lg"
                   dangerouslySetInnerHTML={{ __html: result.blogPost }}
                 />
+                
+                <div className="mt-16 pt-8 border-t border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-200"></div>
+                        <div className="text-sm">
+                            <p className="font-bold text-slate-900">Rédigé par WrapperAI</p>
+                            <p className="text-slate-500">Assistant de contenu intelligent</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><Share2 className="w-5 h-5" /></button>
+                        <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><Heart className="w-5 h-5" /></button>
+                    </div>
+                </div>
               </div>
             )}
 
