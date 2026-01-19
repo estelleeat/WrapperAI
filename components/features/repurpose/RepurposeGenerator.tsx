@@ -11,6 +11,7 @@ interface GeneratedContent {
 
 export default function RepurposeGenerator() {
   const [url, setUrl] = useState('');
+  const [manualText, setManualText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<GeneratedContent | null>(null);
   const [error, setError] = useState('');
@@ -26,7 +27,7 @@ export default function RepurposeGenerator() {
       const res = await fetch('/api/repurpose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, text: manualText }),
       });
 
       const data = await res.json();
@@ -50,24 +51,53 @@ export default function RepurposeGenerator() {
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 className="text-2xl font-bold mb-4 text-slate-800">Repurpose Vidéo YouTube</h2>
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-          <input
-            type="url"
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            required
-          />
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Option 1 : Via URL YouTube</label>
+            <input
+              type="url"
+              placeholder="https://www.youtube.com/watch?v=..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="relative flex items-center py-2">
+            <div className="flex-grow border-t border-slate-200"></div>
+            <span className="flex-shrink-0 mx-4 text-slate-400 text-sm">OU</span>
+            <div className="flex-grow border-t border-slate-200"></div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Option 2 : Coller le texte (Si l'URL ne fonctionne pas)</label>
+            <div className="text-xs text-slate-500 mb-1">
+              Astuce : Sur YouTube, cliquez sur "... Plus" sous la vidéo &gt; "Afficher la transcription" &gt; Copiez tout le texte.
+            </div>
+            <textarea
+              placeholder="Collez ici la transcription de la vidéo..."
+              value={manualText}
+              onChange={(e) => setManualText(e.target.value)}
+              rows={4}
+              className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            disabled={isLoading || (!url && !manualText)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Générer'}
+            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : 'Générer le contenu'}
           </button>
         </form>
-        {error && <p className="text-red-500 mt-3 text-sm">{error}</p>}
+        
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg border border-red-100">
+            {error}
+          </div>
+        )}
       </div>
 
       {result && (
