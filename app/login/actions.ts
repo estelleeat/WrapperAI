@@ -44,8 +44,10 @@ export async function signup(formData: FormData) {
     return { error: error.message }
   }
 
+  // Si la confirmation par mail est désactivée dans Supabase, 
+  // le user est créé et on peut le rediriger ou lui demander de se connecter.
   revalidatePath('/', 'layout')
-  return { success: true }
+  redirect('/workspace')
 }
 
 export async function signout() {

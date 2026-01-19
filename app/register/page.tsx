@@ -19,35 +19,8 @@ export default function RegisterPage() {
     if (res?.error) {
         setError(res.error);
         setIsLoading(false);
-    } else {
-        setSuccess(true);
-        setIsLoading(false);
     }
-  }
-
-  if (success) {
-      return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                        <CheckCircle className="h-6 w-6 text-green-600" />
-                    </div>
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">Inscription réussie !</h3>
-                    <div className="mt-2">
-                        <p className="text-sm text-gray-500">
-                            Un email de confirmation a été envoyé à votre adresse. Veuillez cliquer sur le lien pour activer votre compte.
-                        </p>
-                    </div>
-                    <div className="mt-6">
-                        <Link href="/login" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:text-sm">
-                            Retour à la connexion
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )
+    // Redirection automatique via l'action serveur
   }
 
   return (
