@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, Youtube, Bot, Zap, Shield, Sparkles } from 'lucide-react';
 
@@ -53,10 +54,15 @@ export default function LandingPage() {
           
           <div className="mt-16 relative max-w-5xl mx-auto">
              <div className="absolute inset-0 bg-blue-500/10 blur-[120px] rounded-full"></div>
-             <div className="relative border border-slate-200 rounded-2xl shadow-2xl overflow-hidden bg-slate-50 p-2">
-                <div className="bg-white rounded-xl border border-slate-100 shadow-inner h-[400px] flex items-center justify-center text-slate-300 italic">
-                   Aperçu de l'interface WrapperAI
-                </div>
+             <div className="relative border border-slate-200 rounded-2xl shadow-2xl overflow-hidden bg-slate-50">
+                <Image 
+                  src="/app-screenshot.png" 
+                  alt="Interface WrapperAI" 
+                  width={1200} 
+                  height={800} 
+                  className="w-full h-auto object-cover"
+                  priority
+                />
              </div>
           </div>
         </div>
