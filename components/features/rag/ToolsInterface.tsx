@@ -28,7 +28,6 @@ export default function ToolsInterface() {
   // State pour l'exécution
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [toolResult, setToolResult] = useState('');
-  const [toolSources, setToolSources] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const generateTool = async (e: React.FormEvent) => {
@@ -65,7 +64,6 @@ export default function ToolsInterface() {
 
     setIsRunning(true);
     setToolResult('');
-    setToolSources([]);
     
     try {
       const res = await fetch('/api/tools/run', {
@@ -81,7 +79,6 @@ export default function ToolsInterface() {
       if (!res.ok) throw new Error(data.error);
       
       setToolResult(data.result);
-      setToolSources(Array.from(new Set(data.sources || [])));
     } catch (err: any) {
       setToolResult(`Erreur : ${err.message || "Une erreur est survenue lors de l'exécution."}`);
     } finally {
@@ -241,18 +238,6 @@ export default function ToolsInterface() {
                                 <div className="prose prose-sm prose-slate max-w-none">
                                     <div className="whitespace-pre-wrap">{toolResult}</div>
                                 </div>
-                                {toolSources.length > 0 && (
-                                    <div className="pt-4 border-t border-slate-100">
-                                        <p className="text-[10px] font-semibold text-slate-500 mb-2 uppercase">Sources documentaires utilisées :</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {toolSources.map((source, i) => (
-                                                <span key={i} className="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-100 flex items-center gap-1">
-                                                    📄 {source}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         ) : (
                             <div className="h-full flex items-center justify-center text-slate-300 italic text-sm">

@@ -11,8 +11,7 @@ import ChatInterface from '@/components/features/rag/ChatInterface';
 import ToolsInterface from '@/components/features/rag/ToolsInterface';
 
 export default function WorkspacePage() {
-  const [activeTab, setActiveTab] = useState<'repurpose' | 'rag'>('repurpose');
-  const [ragSubTab, setRagSubTab] = useState<'chat' | 'tools'>('chat');
+  const [activeTab, setActiveTab] = useState<'repurpose' | 'rag' | 'tools'>('repurpose');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -77,9 +76,17 @@ export default function WorkspacePage() {
             <Bot className="w-4 h-4 opacity-80" />
             Assistant RAG
           </button>
+
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all ${activeTab === 'tools' ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' : 'hover:bg-slate-800 hover:text-white'}`}
+          >
+            <Box className="w-4 h-4 opacity-80" />
+            Micro-Apps
+          </button>
         </nav>
 
-        {activeTab === 'rag' && ragSubTab === 'chat' && (
+        {activeTab === 'rag' && (
           <div className="p-4 border-t border-slate-800 bg-slate-900">
              <FileUploader />
           </div>
@@ -106,7 +113,7 @@ export default function WorkspacePage() {
                <span className="hover:text-slate-900 cursor-pointer">Dashboard</span>
                <ChevronRight className="w-4 h-4 mx-1 text-slate-400" />
                <span className="font-medium text-slate-900">
-                 {activeTab === 'repurpose' ? 'Création de Contenu' : 'Base de Connaissances'}
+                 {activeTab === 'repurpose' ? 'Création de Contenu' : activeTab === 'rag' ? 'Base de Connaissances' : 'Mes Micro-Apps'}
                </span>
              </nav>
            </div>
@@ -162,24 +169,6 @@ export default function WorkspacePage() {
 
             {activeTab === 'rag' && (
                <div className="flex-1 flex flex-col h-full animate-in fade-in slide-in-from-bottom-2 duration-500">
-                 {/* Sub-navigation for RAG */}
-                 <div className="flex items-center gap-2 mb-6">
-                    <button 
-                        onClick={() => setRagSubTab('chat')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${ragSubTab === 'chat' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-gray-100'}`}
-                    >
-                        <MessageSquare className="w-4 h-4" /> Discussion
-                    </button>
-                    <button 
-                        onClick={() => setRagSubTab('tools')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${ragSubTab === 'tools' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-gray-100'}`}
-                    >
-                        <Box className="w-4 h-4" /> Micro-Apps
-                        <span className="bg-blue-100 text-blue-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">BETA</span>
-                    </button>
-                 </div>
-
-                 {ragSubTab === 'chat' ? (
                     <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-0">
                         <div className="lg:col-span-1 space-y-6 overflow-y-auto">
                             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -195,12 +184,13 @@ export default function WorkspacePage() {
                             <ChatInterface />
                         </div>
                     </div>
-                 ) : (
-                    <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                        <ToolsInterface />
-                    </div>
-                 )}
                </div>
+            )}
+
+            {activeTab === 'tools' && (
+              <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-500">
+                  <ToolsInterface />
+              </div>
             )}
           </div>
         </div>
