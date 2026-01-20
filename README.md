@@ -20,6 +20,18 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+### YouTube transcripts (fallbacks)
+- Install the helpers: `pip install youtube-transcript-api yt-dlp`.
+- If YouTube blocks requests, configure env vars in `.env.local`:
+  - `YT_PROXY` (optionnel) : proxy résidentiel ou réseau de confiance (ex: `http://user:pass@host:port`).
+  - `YT_COOKIES_FILE` (optionnel) : chemin vers un fichier cookies exporté depuis YouTube (pour les vidéos nécessitant connexion/âge).
+  - `YT_USER_AGENT` (optionnel) : user-agent custom si besoin.
+  - `YT_DLP_EXTRA` (optionnel) : options supplémentaires passées à `yt-dlp` (ex: `--extractor-args "youtube:player_client=android"`).
+- Le fallback Whisper utilise `yt-dlp` avec ces paramètres; sans accès audio, utilisez l’option Copier/Coller dans l’UI.
+
+### Gemini quotas
+- Les checks de santé appellent Gemini. Si tu es en quota free tier, définis `DISABLE_GEMINI_HEALTHCHECK=true` dans `.env.local` pour ne pas consommer de requêtes sur cette route.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
