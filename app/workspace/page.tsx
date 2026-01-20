@@ -37,9 +37,6 @@ export default function WorkspacePage() {
     };
     
     checkHealth();
-    // Poll every minute
-    const interval = setInterval(checkHealth, 60000);
-    return () => clearInterval(interval);
   }, []);
 
   // Dérivation des initiales et du nom

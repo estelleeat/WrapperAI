@@ -6,15 +6,20 @@ export async function GET() {
   let geminiStatus = 'down';
   let groqStatus = 'down';
   let errorDetails = '';
+  const skipGemini = process.env.DISABLE_GEMINI_HEALTHCHECK === 'true';
 
   // Test Gemini
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-    await model.generateContent("ping");
-    geminiStatus = 'ok';
-  } catch (error: any) {
-    console.error('❌ Gemini Health Check FAILED:', error.message); // LOG VISIBLE TERMINAL
-    errorDetails += `Gemini: ${error.message}; `;
+  if (skipGemini) {
+    geminiStatus = 'skipped';
+  } else {
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      await model.generateContent("ping");
+      geminiStatus = 'ok';
+    } catch (error: any) {
+      console.error('❌ Gemini Health Check FAILED:', error.message); // LOG VISIBLE TERMINAL
+      errorDetails += `Gemini: ${error.message}; `;
+    }
   }
 
   // Test Groq

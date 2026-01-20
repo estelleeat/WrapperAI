@@ -6,6 +6,9 @@ import { promisify } from 'util';
 import ytdl from '@distube/ytdl-core';
 import { Innertube } from 'youtubei.js';
 
+// Force runtime Node (pas Edge) pour autoriser child_process / yt-dlp
+export const runtime = 'nodejs';
+
 const execAsync = promisify(exec);
 
 function extractVideoId(url: string): string | null {
@@ -69,13 +72,41 @@ async function transcribeYoutubeAudio(url: string): Promise<string> {
   console.log(`Starting Whisper transcription with yt-dlp for: ${url}`);
   
   try {
-    // On essaie de récupérer le flux audio le plus compatible possible
-    // --no-check-certificates et --prefer-free-formats aident à passer les blocages
-    const cmd = `python3 -m yt_dlp -f "ba[ext=m4a]/ba" --no-check-certificates --no-playlist -o - "${url}"`;
+    const pythonBin = process.env.PYTHON_BIN || 'python3';
+    const userAgent =
+      process.env.YT_USER_AGENT ||
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
+    const proxy = process.env.YT_PROXY ? ` --proxy ${process.env.YT_PROXY}` : '';
+    const cookies = process.env.YT_COOKIES_FILE ? ` --cookies ${process.env.YT_COOKIES_FILE}` : '';
+    const extra = process.env.YT_DLP_EXTRA ? ` ${process.env.YT_DLP_EXTRA}` : '';
+
+    // --user-agent et --cookies aident à contourner certains blocages.
+    // L'option proxy permet d'utiliser un endpoint résidentiel dédié si besoin.
+    const cmd = [
+      `${pythonBin} -m yt_dlp`,
+      '-f "ba[ext=m4a]/ba/bestaudio"',
+      '--geo-bypass',
+      '--no-check-certificates',
+      '--no-playlist',
+      '--user-agent',
+      `"${userAgent}"`,
+      cookies,
+      proxy,
+      extra,
+      '-o -',
+      `"${url}"`,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
     console.log(`Running: ${cmd}`);
     
     const { execSync } = require('child_process');
-    const buffer = execSync(cmd, { maxBuffer: 50 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
+    const buffer = execSync(cmd, {
+      maxBuffer: 50 * 1024 * 1024,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env },
+    });
 
     if (!buffer || buffer.length === 0) {
         throw new Error("Aucune donnée audio reçue.");
@@ -87,8 +118,20 @@ async function transcribeYoutubeAudio(url: string): Promise<string> {
     return await transcribeAudio(file);
 
   } catch (error: any) {
-    console.error("Whisper yt-dlp fallback error:", error.message);
-    throw new Error("YouTube bloque le téléchargement direct. Veuillez utiliser l'option Copier/Coller.");
+    const msg = error?.message || '';
+    console.error("Whisper yt-dlp fallback error:", msg);
+
+    if (msg.includes('HTTP Error 429') || msg.includes('Too Many Requests')) {
+      throw new Error("YouTube limite les requêtes (429). Essaie un proxy résidentiel via YT_PROXY.");
+    }
+    if (msg.includes('Sign in to confirm')) {
+      throw new Error("YouTube demande une connexion. Fournis un fichier de cookies via YT_COOKIES_FILE.");
+    }
+    if (msg.includes('No module named') || msg.includes('not found')) {
+      throw new Error("yt-dlp introuvable côté serveur. Vérifie PYTHON_BIN et l'installation pip.");
+    }
+
+    throw new Error("YouTube bloque le téléchargement direct. Ajoute YT_PROXY ou YT_COOKIES_FILE (ou PYTHON_BIN), ou utilise l'option Copier/Coller.");
   }
 }
 
