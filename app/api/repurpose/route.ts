@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
-import { generateWithGroq } from '@/lib/groq';
+import { generateWithGroq, transcribeAudio } from '@/lib/groq';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import ytdl from '@distube/ytdl-core';
+import { Innertube } from 'youtubei.js';
 
 const execAsync = promisify(exec);
 
@@ -80,6 +82,69 @@ async function getTranscriptWithPython(videoId: string): Promise<string> {
   }
 }
 
+async function transcribeYoutubeAudio(url: string): Promise<string> {
+  console.log(`Starting Whisper transcription for: ${url}`);
+  let audioUrl = "";
+  let mimeType = "audio/mp4";
+
+  // Tentative 1: ytdl-core
+  try {
+    const info = await ytdl.getInfo(url);
+    const format = ytdl.chooseFormat(info.formats, { filter: 'audioonly', quality: 'lowestaudio' });
+    if (format && format.url) {
+        audioUrl = format.url;
+        mimeType = format.mimeType || "audio/mp4";
+        console.log("Audio URL found with ytdl-core");
+    }
+  } catch (e: any) {
+    console.warn("ytdl-core failed to get info, trying youtubei.js...", e.message);
+  }
+
+  // Tentative 2: youtubei.js (si ytdl a échoué)
+  if (!audioUrl) {
+    try {
+        const youtube = await Innertube.create();
+        const videoId = extractVideoId(url);
+        if (videoId) {
+            const info = await youtube.getBasicInfo(videoId);
+            const format = info.streaming_data?.adaptive_formats.find(f => f.has_audio && !f.has_video);
+            if (format && format.decipher(youtube.session.player)) {
+                audioUrl = format.url;
+                mimeType = format.mime_type;
+                console.log("Audio URL found with youtubei.js");
+            }
+        }
+    } catch (e: any) {
+        console.error("youtubei.js also failed:", e.message);
+    }
+  }
+
+  if (!audioUrl) {
+    throw new Error("Impossible d'extraire le flux audio de la vidéo (blocage YouTube).");
+  }
+
+  try {
+    console.log(`Downloading audio for Whisper...`);
+    const response = await fetch(audioUrl, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://www.youtube.com/',
+        }
+    });
+    
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+
+    const blob = await response.blob();
+    const file = new File([blob], 'audio.m4a', { type: mimeType.split(';')[0] });
+    
+    console.log(`Sending to Groq Whisper (${Math.round(blob.size / 1024 / 1024)} MB)...`);
+    return await transcribeAudio(file);
+  } catch (error: any) {
+    console.error("Whisper download/transcribe error:", error.message);
+    throw new Error(`Échec final du fallback: ${error.message}`);
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { url, text: manualText } = await req.json();
@@ -103,11 +168,17 @@ export async function POST(req: Request) {
         fullText = await getTranscriptWithPython(videoId);
         console.log(`Transcript extracted (${fullText.length} chars)`);
       } catch (e: any) {
-         console.error('Transcript extraction failed:', e);
-         return NextResponse.json(
-          { error: `Extraction automatique échouée (${e.message}). YouTube bloque parfois les requêtes. Veuillez utiliser l'option 2 (Copier/Coller).` },
-          { status: 422 }
-        );
+         console.warn('Python transcript failed, trying Whisper fallback...', e.message);
+         try {
+            fullText = await transcribeYoutubeAudio(url);
+            console.log(`Whisper transcript success (${fullText.length} chars)`);
+         } catch (whisperError: any) {
+            console.error('All transcript methods failed:', whisperError);
+            return NextResponse.json(
+              { error: `Extraction automatique échouée (${e.message}). Le fallback Whisper a aussi échoué: ${whisperError.message}.` },
+              { status: 422 }
+            );
+         }
       }
     }
 

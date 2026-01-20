@@ -23,3 +23,16 @@ export async function generateWithGroq(systemPrompt: string, userContent: string
 
   return completion.choices[0]?.message?.content || '';
 }
+
+export async function transcribeAudio(file: any) {
+  if (!apiKey) {
+    throw new Error("Clé API Groq manquante.");
+  }
+
+  const transcription = await groq.audio.transcriptions.create({
+    file: file,
+    model: "whisper-large-v3",
+  });
+
+  return transcription.text;
+}
