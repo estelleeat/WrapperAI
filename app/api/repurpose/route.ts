@@ -83,52 +83,30 @@ async function getTranscriptWithPython(videoId: string): Promise<string> {
 }
 
 async function transcribeYoutubeAudio(url: string): Promise<string> {
-  console.log(`Starting Whisper transcription for: ${url}`);
+  console.log(`Starting Whisper transcription with yt-dlp for: ${url}`);
   
   try {
-    const youtube = await Innertube.create();
-    const videoId = extractVideoId(url);
-    if (!videoId) throw new Error("ID vidéo invalide.");
+    // On utilise python3 -m yt_dlp pour être sûr d'utiliser la version installée via pip
+    // On demande le meilleur audio de moins de 10Mo pour rester rapide
+    const cmd = `python3 -m yt_dlp -x --audio-format m4a -o - "${url}"`;
+    console.log(`Running: ${cmd}`);
+    
+    // On utilise execSync pour récupérer le buffer binaire directement
+    const { execSync } = require('child_process');
+    const buffer = execSync(cmd, { maxBuffer: 50 * 1024 * 1024 }); // 50MB max
 
-    console.log("Downloading audio stream via Innertube...");
-    const stream = await youtube.download(videoId, {
-      type: 'audio',
-      quality: 'bestefficiency',
-      format: 'mp4'
-    });
-
-    // On transforme le stream en Buffer pour Groq
-    const chunks = [];
-    for await (const chunk of stream) {
-        chunks.push(chunk);
+    if (!buffer || buffer.length === 0) {
+        throw new Error("Le flux audio récupéré par yt-dlp est vide.");
     }
-    const buffer = Buffer.concat(chunks);
-    
-    if (buffer.length === 0) throw new Error("Le flux audio est vide.");
 
-    console.log(`Audio downloaded (${Math.round(buffer.length / 1024 / 1024)} MB). Sending to Whisper...`);
+    console.log(`Audio downloaded via yt-dlp (${Math.round(buffer.length / 1024 / 1024)} MB). Sending to Whisper...`);
     
-    // Création d'un objet compatible avec Groq (File/Blob)
     const file = new File([buffer], 'audio.m4a', { type: 'audio/mp4' });
     return await transcribeAudio(file);
 
   } catch (error: any) {
-    console.error("Whisper Innertube fallback error:", error.message);
-    
-    // Si youtubei échoue aussi, on tente un dernier effort avec ytdl-core mais avec une méthode différente
-    try {
-        console.log("Last attempt with ytdl-core stream...");
-        const stream = ytdl(url, { filter: 'audioonly', quality: 'lowestaudio' });
-        const chunks = [];
-        for await (const chunk of stream) {
-            chunks.push(chunk);
-        }
-        const buffer = Buffer.concat(chunks);
-        const file = new File([buffer], 'audio.m4a', { type: 'audio/mp4' });
-        return await transcribeAudio(file);
-    } catch (finalError: any) {
-        throw new Error(`Échec de toutes les méthodes de récupération audio: ${finalError.message}`);
-    }
+    console.error("Whisper yt-dlp fallback error:", error.message);
+    throw new Error(`Échec de l'extraction audio avec yt-dlp: ${error.message}`);
   }
 }
 
