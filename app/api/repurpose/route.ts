@@ -11,24 +11,7 @@ const execAsync = promisify(exec);
 function extractVideoId(url: string): string | null {
   const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)|(shorts\/))\??v?=?([^#&?]*).*/;
   const match = url.match(regExp);
-  
-  // Si match[8] existe et fait 11 chars (standard YouTube ID)
-  if (match && match[8] && match[8].length === 11) {
-    return match[8];
-  }
-  
-  // Fallback simple pour les URLs qui pourraient avoir l'ID juste après le dernier slash
-  try {
-    const urlObj = new URL(url);
-    if (urlObj.hostname === 'youtu.be') return urlObj.pathname.slice(1);
-    if (urlObj.pathname.startsWith('/shorts/')) return urlObj.pathname.split('/')[2];
-    const v = urlObj.searchParams.get('v');
-    if (v && v.length === 11) return v;
-  } catch (e) {
-    // Ignore URL parsing errors
-  }
-
-  return null;
+  return (match && (match[8] || match[7]).length === 11) ? (match[8] || match[7]) : null;
 }
 
 async function getTranscriptWithPython(videoId: string): Promise<string> {
@@ -86,27 +69,26 @@ async function transcribeYoutubeAudio(url: string): Promise<string> {
   console.log(`Starting Whisper transcription with yt-dlp for: ${url}`);
   
   try {
-    // On utilise python3 -m yt_dlp pour être sûr d'utiliser la version installée via pip
-    // On demande le meilleur audio de moins de 10Mo pour rester rapide
-    const cmd = `python3 -m yt_dlp -x --audio-format m4a -o - "${url}"`;
+    // On essaie de récupérer le flux audio le plus compatible possible
+    // --no-check-certificates et --prefer-free-formats aident à passer les blocages
+    const cmd = `python3 -m yt_dlp -f "ba[ext=m4a]/ba" --no-check-certificates --no-playlist -o - "${url}"`;
     console.log(`Running: ${cmd}`);
     
-    // On utilise execSync pour récupérer le buffer binaire directement
     const { execSync } = require('child_process');
-    const buffer = execSync(cmd, { maxBuffer: 50 * 1024 * 1024 }); // 50MB max
+    const buffer = execSync(cmd, { maxBuffer: 50 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
 
     if (!buffer || buffer.length === 0) {
-        throw new Error("Le flux audio récupéré par yt-dlp est vide.");
+        throw new Error("Aucune donnée audio reçue.");
     }
 
-    console.log(`Audio downloaded via yt-dlp (${Math.round(buffer.length / 1024 / 1024)} MB). Sending to Whisper...`);
+    console.log(`Audio downloaded (${Math.round(buffer.length / 1024 / 1024)} MB). Sending to Whisper...`);
     
     const file = new File([buffer], 'audio.m4a', { type: 'audio/mp4' });
     return await transcribeAudio(file);
 
   } catch (error: any) {
     console.error("Whisper yt-dlp fallback error:", error.message);
-    throw new Error(`Échec de l'extraction audio avec yt-dlp: ${error.message}`);
+    throw new Error("YouTube bloque le téléchargement direct. Veuillez utiliser l'option Copier/Coller.");
   }
 }
 
