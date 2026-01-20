@@ -31,8 +31,33 @@ export default function ToolsInterface() {
   const [toolSources, setToolSources] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  // ... (dans runTool)
-  
+  const generateTool = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newToolPrompt.trim()) return;
+
+    setIsGenerating(true);
+    setGenError(null);
+    try {
+      const res = await fetch('/api/tools/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: newToolPrompt }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Échec de la génération");
+
+      const newTool = { ...data, id: Date.now().toString() };
+      setTools(prev => [...prev, newTool]);
+      setActiveToolId(newTool.id);
+      setNewToolPrompt('');
+    } catch (err: any) {
+      setGenError(err.message);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const runTool = async (e: React.FormEvent) => {
     e.preventDefault();
     const tool = tools.find(t => t.id === activeToolId);
