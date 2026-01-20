@@ -15,15 +15,22 @@ export async function POST(req: Request) {
     let finalPrompt = promptTemplate;
     let combinedInputText = "";
 
+    console.log("Inputs received:", inputs);
+
     for (const [key, value] of Object.entries(inputs)) {
       const valStr = String(value);
-      finalPrompt = finalPrompt.replace(new RegExp(`{{${key}}}`, 'g'), valStr);
+      // Utilisation de split/join au lieu de RegExp pour éviter les erreurs avec les caractères spéciaux
+      finalPrompt = finalPrompt.split(`{{${key}}}`).join(valStr);
       combinedInputText += valStr + " ";
     }
+
+    console.log("Final prompt after replacement:", finalPrompt);
 
     // --- RAG INTEGRATION ---
     // On cherche du contexte pertinent dans les PDF si l'input n'est pas vide
     let contextText = "";
+    let foundDocs: any[] = [];
+
     if (combinedInputText.trim().length > 5) {
         try {
             const queryEmbedding = await getEmbedding(combinedInputText);
@@ -34,6 +41,7 @@ export async function POST(req: Request) {
             });
 
             if (documents && documents.length > 0) {
+                foundDocs = documents;
                 contextText = documents.map((d: any) => d.content).join('\n---\n');
                 console.log(`RAG: Found ${documents.length} chunks for tool execution.`);
             }
@@ -65,7 +73,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
         result: text,
-        sources: documents?.map((d: any) => d.metadata.filename) || []
+        sources: foundDocs?.map((d: any) => d.metadata?.filename).filter(Boolean) || []
     });
 
   } catch (error: any) {

@@ -25,7 +25,7 @@ returns table (
 language plpgsql
 as $$
 begin
-  return query;
+  return query
   select
     documents.id,
     documents.content,

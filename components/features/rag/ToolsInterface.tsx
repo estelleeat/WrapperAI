@@ -82,8 +82,8 @@ export default function ToolsInterface() {
       
       setToolResult(data.result);
       setToolSources(Array.from(new Set(data.sources || [])));
-    } catch (err) {
-      setToolResult("Erreur lors de l'exécution.");
+    } catch (err: any) {
+      setToolResult(`Erreur : ${err.message || "Une erreur est survenue lors de l'exécution."}`);
     } finally {
       setIsRunning(false);
     }
