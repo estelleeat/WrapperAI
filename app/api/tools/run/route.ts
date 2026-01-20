@@ -12,27 +12,23 @@ export async function POST(req: Request) {
 
     // Remplacement des variables dans le template
     let finalPrompt = promptTemplate;
-    let combinedInputText = "";
-
-    console.log("Inputs received:", inputs);
-
+    
     for (const [key, value] of Object.entries(inputs)) {
       const valStr = String(value);
-      // Utilisation de split/join au lieu de RegExp pour éviter les erreurs avec les caractères spéciaux
       finalPrompt = finalPrompt.split(`{{${key}}}`).join(valStr);
-      combinedInputText += valStr + " ";
     }
 
     console.log("Final prompt after replacement:", finalPrompt);
 
     let text = '';
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
         const result = await model.generateContent(finalPrompt);
         const response = await result.response;
         text = response.text();
     } catch (geminiError) {
-        console.warn("Gemini tool run failed, trying Groq...", geminiError);
+        console.warn("Gemini tool run failed, trying Groq fallback...", geminiError);
         try {
             // Mode texte pour l'exécution (pas de JSON forcé)
             text = await generateWithGroq("Tu es un assistant expert.", finalPrompt, false);

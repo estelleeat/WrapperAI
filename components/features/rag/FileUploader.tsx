@@ -11,8 +11,9 @@ export default function FileUploader() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      setStatus({ type: 'error', message: 'Seuls les fichiers PDF sont acceptés.' });
+    const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setStatus({ type: 'error', message: 'Formats acceptés : PDF, PNG, JPG.' });
       return;
     }
 
@@ -44,7 +45,7 @@ export default function FileUploader() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Base de Connaissances</h3>
-        <span className="text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">PDF</span>
+        <span className="text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">PDF / IMG</span>
       </div>
       
       <div className="flex flex-col gap-3">
@@ -59,7 +60,7 @@ export default function FileUploader() {
           </span>
           <input 
             type="file" 
-            accept="application/pdf" 
+            accept="application/pdf, image/png, image/jpeg, image/jpg" 
             className="hidden" 
             onChange={handleFileUpload} 
             disabled={isUploading}

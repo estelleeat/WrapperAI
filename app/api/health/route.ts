@@ -13,7 +13,7 @@ export async function GET() {
     geminiStatus = 'skipped';
   } else {
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       await model.generateContent("ping");
       geminiStatus = 'ok';
     } catch (error: any) {

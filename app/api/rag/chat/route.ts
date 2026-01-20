@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { genAI, getEmbedding } from '@/lib/google';
+import { generateWithGroq } from '@/lib/groq';
 
 export async function POST(req: Request) {
   try {
@@ -40,35 +41,44 @@ export async function POST(req: Request) {
     `;
 
     // 4. Génération de la réponse
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     
-    let result;
+    let text = '';
     let retryCount = 0;
-    const maxRetries = 3;
+    const maxRetries = 2;
 
-    while (retryCount < maxRetries) {
-      try {
-        result = await model.generateContent([
-          systemPrompt, 
-          `Question utilisateur : ${message}`
-        ]);
-        break;
-      } catch (e: any) {
-        if (e.message?.includes('429') && retryCount < maxRetries - 1) {
-          retryCount++;
-          const delay = Math.pow(2, retryCount) * 1000 + (Math.random() * 1000);
-          console.log(`Quota 429 hit (Chat). Retrying in ${Math.round(delay)}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        } else {
-          throw e;
+    try {
+      while (retryCount < maxRetries) {
+        try {
+          const result = await model.generateContent([
+            systemPrompt, 
+            `Question utilisateur : ${message}`
+          ]);
+          const response = await result.response;
+          text = response.text();
+          break;
+        } catch (e: any) {
+          if (e.message?.includes('429') && retryCount < maxRetries - 1) {
+            retryCount++;
+            const delay = Math.pow(2, retryCount) * 1000 + (Math.random() * 1000);
+            console.log(`Quota 429 hit (Chat). Retrying in ${Math.round(delay)}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            throw e;
+          }
         }
+      }
+    } catch (geminiError: any) {
+      console.warn("Gemini Chat failed, attempting Groq fallback...", geminiError.message);
+      try {
+        text = await generateWithGroq(systemPrompt, `Question utilisateur : ${message}`, false);
+      } catch (groqError: any) {
+        console.error("Groq fallback also failed:", groqError.message);
+        throw new Error(geminiError.message || "Échec de génération (Gemini & Fallback)");
       }
     }
 
-    if (!result) throw new Error("Échec de la génération après plusieurs tentatives (Quota ?)");
-
-    const response = await result.response;
-    const text = response.text();
+    if (!text) throw new Error("Échec de la génération après plusieurs tentatives");
 
     return NextResponse.json({
       answer: text, 

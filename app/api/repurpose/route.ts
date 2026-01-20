@@ -186,10 +186,11 @@ export async function POST(req: Request) {
 
     // 2. Configuration du Modèle Gemini
     // Utilisation de l'alias stable pour éviter les erreurs de version
-    const model = genAI.getGenerativeModel({
-      model: "gemini-flash-latest",
-      generationConfig: {
-        responseMimeType: "application/json",
+      // Utiliser Gemini pour générer le contenu
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+        generationConfig: {
+          responseMimeType: "application/json",
       },
     });
 

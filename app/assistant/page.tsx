@@ -39,9 +39,6 @@ export default function AssistantPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Sidebar Upload */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-sm text-blue-800">
-              <strong>Note :</strong> Seuls les fichiers PDF sont supportés pour le moment.
-            </div>
             <FileUploader />
           </div>
 

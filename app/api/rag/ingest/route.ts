@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getEmbedding } from '@/lib/google';
+import { getEmbedding, genAI } from '@/lib/google';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
 
 export async function POST(req: Request) {
@@ -19,13 +19,34 @@ export async function POST(req: Request) {
 
     // 1. Extraction du texte
     let text = '';
-    let numpages = 0;
+    let numpages = 1;
     
     try {
         const buffer = Buffer.from(await file.arrayBuffer());
-        const data = await pdf(buffer);
-        text = data.text;
-        numpages = data.numpages;
+        
+        if (file.type === 'application/pdf') {
+            const data = await pdf(buffer);
+            text = data.text;
+            numpages = data.numpages;
+        } else if (file.type.startsWith('image/')) {
+            // Utilisation de Gemini Vision pour extraire le texte de l'image
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+            const prompt = "Extrait tout le texte visible dans cette image. Sois précis et exhaustif. Si c'est un graphique, décris-le en détail.";
+            
+            const imagePart = {
+                inlineData: {
+                    data: buffer.toString('base64'),
+                    mimeType: file.type,
+                },
+            };
+
+            const result = await model.generateContent([prompt, imagePart]);
+            const response = await result.response;
+            text = response.text();
+            console.log("Texte extrait de l'image :", text.substring(0, 100) + "...");
+        } else {
+             return NextResponse.json({ error: 'Format de fichier non supporté.' }, { status: 400 });
+        }
         
         if (!text || text.trim().length === 0) {
             return NextResponse.json(
