@@ -30,7 +30,7 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -42,6 +42,10 @@ export async function signup(formData: FormData) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (data?.user && !data.session) {
+    return { message: 'Veuillez vérifier vos emails pour confirmer votre inscription.' }
   }
 
   // Si la confirmation par mail est désactivée dans Supabase, 

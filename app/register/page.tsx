@@ -9,18 +9,41 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true);
     setError(null);
+    setMessage(null);
     
     const res = await signup(formData);
     
     if (res?.error) {
         setError(res.error);
         setIsLoading(false);
+    } else if (res?.message) {
+        setSuccess(true);
+        setMessage(res.message);
+        setIsLoading(false);
     }
-    // Redirection automatique via l'action serveur
+    // Redirection automatique via l'action serveur si pas de message/erreur
+  }
+
+  if (success) {
+      return (
+        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+            <div className="sm:mx-auto sm:w-full sm:max-w-md">
+                <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-lg sm:px-10 border border-slate-100 flex flex-col items-center">
+                    <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">Inscription réussie !</h2>
+                    <p className="text-center text-slate-600 mb-6">{message}</p>
+                    <Link href="/login" className="text-blue-600 hover:text-blue-500 font-medium">
+                        Retour à la connexion
+                    </Link>
+                </div>
+            </div>
+        </div>
+      )
   }
 
   return (
@@ -101,7 +124,7 @@ export default function RegisterPage() {
                             <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
                         </div>
                         <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800">Erreur d'inscription</h3>
+                            <h3 className="text-sm font-medium text-red-800">Erreur d&apos;inscription</h3>
                             <div className="mt-2 text-sm text-red-700">
                                 <p>{error}</p>
                             </div>
