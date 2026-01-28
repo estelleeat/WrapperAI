@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 import { genAI } from '@/lib/google';
 import { generateWithGroq, transcribeAudio } from '@/lib/groq';
-import { exec, execSync } from 'child_process';
-import { promisify } from 'util';
+import { execSync } from 'child_process';
 import ytdl from '@distube/ytdl-core';
 import { Innertube } from 'youtubei.js';
 
 // Force runtime Node (pas Edge) pour autoriser child_process / yt-dlp
 export const runtime = 'nodejs';
 
-const execAsync = promisify(exec);
 const DEFAULT_YT_USER_AGENT =
   process.env.YT_USER_AGENT ||
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
-type TranscriptItem = { text: string };
 type BasicInfo = {
   short_description?: string;
   description?: string | { toString(): string };
@@ -29,29 +26,12 @@ function getErrorMessage(error: unknown): string {
   return 'Unknown error';
 }
 
-function getStderr(error: unknown): string {
-  if (error && typeof error === 'object' && 'stderr' in error) {
-    const stderr = (error as { stderr?: unknown }).stderr;
-    if (typeof stderr === 'string') return stderr;
-  }
-  return '';
-}
-
 function getStatusCode(error: unknown): number | undefined {
   if (error && typeof error === 'object' && 'status' in error) {
     const status = (error as { status?: unknown }).status;
     if (typeof status === 'number') return status;
   }
   return undefined;
-}
-
-function isTranscriptItem(value: unknown): value is TranscriptItem {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'text' in value &&
-    typeof (value as { text?: unknown }).text === 'string'
-  );
 }
 
 function extractVideoId(url: string): string | null {
@@ -91,62 +71,6 @@ async function getVideoDescription(url: string, videoId?: string): Promise<strin
   }
 
   return null;
-}
-
-async function getTranscriptWithPython(videoId: string): Promise<string> {
-  const cmd = `python3 -m youtube_transcript_api ${videoId} --languages fr en --format json`;
-  console.log(`Running python transcript: ${cmd}`);
-  
-  try {
-    const { stdout } = await execAsync(cmd);
-    
-    if (!stdout || stdout.trim() === "") {
-        throw new Error("Le script Python n'a retourné aucune donnée.");
-    }
-
-    // Vérifier si le début ressemble à du JSON
-    const trimmedStdout = stdout.trim();
-    if (!trimmedStdout.startsWith('[') && !trimmedStdout.startsWith('{')) {
-        // C'est probablement un message d'erreur en texte brut
-        throw new Error(trimmedStdout.split('\n')[0]); 
-    }
-
-    const data: unknown = JSON.parse(trimmedStdout);
-    let transcriptData: unknown = data;
-    
-    if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
-        transcriptData = data[0];
-    }
-    
-    if (Array.isArray(transcriptData)) {
-        const transcriptItems = transcriptData.filter(isTranscriptItem);
-        if (transcriptItems.length > 0) {
-          return transcriptItems.map((item) => item.text).join(' ');
-        }
-    }
-    
-    throw new Error('Format JSON inattendu du script Python');
-
-  } catch (error: unknown) {
-    const message = getErrorMessage(error);
-    console.error("Python extraction error:", message);
-    
-    // Si c'est une erreur d'exécution du process (ex: 429)
-    const stderrOutput = getStderr(error);
-    if (stderrOutput) {
-        if (stderrOutput.includes('TranscriptsDisabled')) {
-            throw new Error("Les sous-titres sont désactivés pour cette vidéo.");
-        }
-        if (stderrOutput.includes('Too Many Requests') || stderrOutput.includes('429')) {
-            throw new Error("YouTube bloque temporairement les requêtes (429).");
-        }
-        if (stderrOutput.includes('VideoUnavailable')) {
-            throw new Error("La vidéo est indisponible ou privée.");
-        }
-    }
-    
-    throw error;
-  }
 }
 
 async function transcribeYoutubeAudio(url: string): Promise<string> {
@@ -224,7 +148,7 @@ export async function POST(req: Request) {
     let fullText = manualText || '';
     let videoDescription = '';
 
-    // Si on a une URL mais pas de texte manuel, on essaie de récupérer le transcript
+    // Si on a une URL mais pas de texte manuel, on passe systématiquement par l'audio
     if (url && !manualText) {
       console.log(`Processing URL: ${url}`);
       const videoId = extractVideoId(url);
@@ -240,19 +164,12 @@ export async function POST(req: Request) {
         fullText = await transcribeYoutubeAudio(url);
         console.log(`Whisper transcript success (${fullText.length} chars)`);
       } catch (whisperError: unknown) {
-         const whisperMessage = getErrorMessage(whisperError);
-         console.warn('Whisper fallback failed, trying Python transcript as last resort...', whisperMessage);
-         try {
-            fullText = await getTranscriptWithPython(videoId);
-            console.log(`Python transcript success (${fullText.length} chars)`);
-         } catch (pythonError: unknown) {
-            const pythonMessage = getErrorMessage(pythonError);
-            console.error('All transcript methods failed:', pythonMessage);
-            return NextResponse.json(
-              { error: `Extraction automatique échouée. Whisper error: ${whisperMessage}. Python fallback error: ${pythonMessage}` },
-              { status: 422 }
-            );
-         }
+        const whisperMessage = getErrorMessage(whisperError);
+        console.error('Audio transcription failed:', whisperMessage);
+        return NextResponse.json(
+          { error: `Extraction automatique échouée. Audio transcription error: ${whisperMessage}` },
+          { status: 422 }
+        );
       }
 
       const description = await descriptionPromise;
