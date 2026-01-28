@@ -20,14 +20,14 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### YouTube transcripts (fallbacks)
-- Install the helpers: `pip install youtube-transcript-api yt-dlp`.
-- If YouTube blocks requests, configure env vars in `.env.local`:
-  - `YT_PROXY` (optionnel) : proxy résidentiel ou réseau de confiance (ex: `http://user:pass@host:port`).
-  - `YT_COOKIES_FILE` (optionnel) : chemin vers un fichier cookies exporté depuis YouTube (pour les vidéos nécessitant connexion/âge).
-  - `YT_USER_AGENT` (optionnel) : user-agent custom si besoin.
-  - `YT_DLP_EXTRA` (optionnel) : options supplémentaires passées à `yt-dlp` (ex: `--extractor-args "youtube:player_client=android"`).
-- Le fallback Whisper utilise `yt-dlp` avec ces paramètres; sans accès audio, utilisez l’option Copier/Coller dans l’UI.
+### YouTube Transcription (Whisper & yt-dlp)
+- Ce projet utilise **Whisper (via Groq)** comme méthode principale pour transcrire les vidéos YouTube, car les méthodes basées sur les transcripts officiels sont souvent bloquées sur les serveurs VPS (OVH, AWS, etc.).
+- Prérequis : `pip install yt-dlp` (et `youtube-transcript-api` en fallback).
+- Si YouTube bloque les requêtes (429), configurez ces variables dans `.env.local` :
+  - `YT_PROXY` : proxy résidentiel (ex: `http://user:pass@host:port`).
+  - `YT_COOKIES_FILE` : chemin vers un fichier cookies exporté depuis YouTube.
+  - `YT_DLP_EXTRA` : options supplémentaires (ex: `--extractor-args "youtube:player_client=android"`).
+- Sans accès audio ou si tout échoue, utilisez l'option "Transcription manuelle" (Copier/Coller) dans l'interface.
 
 ### Gemini quotas
 - Les checks de santé appellent Gemini. Si tu es en quota free tier, définis `DISABLE_GEMINI_HEALTHCHECK=true` dans `.env.local` pour ne pas consommer de requêtes sur cette route.

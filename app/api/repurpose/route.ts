@@ -167,6 +167,7 @@ async function transcribeYoutubeAudio(url: string): Promise<string> {
       '--geo-bypass',
       '--no-check-certificates',
       '--no-playlist',
+      '--extractor-args "youtube:player_client=android,ios"',
       '--user-agent',
       `"${userAgent}"`,
       cookies,
@@ -235,19 +236,20 @@ export async function POST(req: Request) {
       const descriptionPromise = getVideoDescription(url, videoId);
 
       try {
-        fullText = await getTranscriptWithPython(videoId);
-        console.log(`Transcript extracted (${fullText.length} chars)`);
-      } catch (error: unknown) {
-         const pythonMessage = getErrorMessage(error);
-         console.warn('Python transcript failed, trying Whisper fallback...', pythonMessage);
+        console.log(`Attempting primary method: Whisper transcription via yt-dlp for ${url}`);
+        fullText = await transcribeYoutubeAudio(url);
+        console.log(`Whisper transcript success (${fullText.length} chars)`);
+      } catch (whisperError: unknown) {
+         const whisperMessage = getErrorMessage(whisperError);
+         console.warn('Whisper fallback failed, trying Python transcript as last resort...', whisperMessage);
          try {
-            fullText = await transcribeYoutubeAudio(url);
-            console.log(`Whisper transcript success (${fullText.length} chars)`);
-         } catch (whisperError: unknown) {
-            const whisperMessage = getErrorMessage(whisperError);
-            console.error('All transcript methods failed:', whisperMessage);
+            fullText = await getTranscriptWithPython(videoId);
+            console.log(`Python transcript success (${fullText.length} chars)`);
+         } catch (pythonError: unknown) {
+            const pythonMessage = getErrorMessage(pythonError);
+            console.error('All transcript methods failed:', pythonMessage);
             return NextResponse.json(
-              { error: `Extraction automatique échouée (${pythonMessage}). Le fallback Whisper a aussi échoué: ${whisperMessage}.` },
+              { error: `Extraction automatique échouée. Whisper error: ${whisperMessage}. Python fallback error: ${pythonMessage}` },
               { status: 422 }
             );
          }
